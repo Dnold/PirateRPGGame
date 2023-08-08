@@ -36,8 +36,11 @@ public class MapGenerator : MonoBehaviour
 
 
     //Size of a Chunk
+    [Tooltip("Don't set this >32. may crash")]
     public Vector2Int chunkDimension;
-
+    //Chunk Grid Size
+    [Tooltip("Dont set this to a number > 10. Will definitly Crash")]
+    public Vector2Int chunksGridSize;
     //Randomizer
     public string seed;
     public bool useRandom;
@@ -62,8 +65,7 @@ public class MapGenerator : MonoBehaviour
     //Smoothing
     public int iterations;
 
-    //Chunk Grid Size
-    public Vector2Int chunksGridSize;
+    
 
     public float totalGridWidth = 10f;  // Total width of the grid in Unity units
     public float totalGridHeight = 10f; // Total height of the grid in Unity units
