@@ -42,8 +42,11 @@ public class MapGenerator : MonoBehaviour
     public string seed;
     public bool useRandom;
 
+    public int maxWaterFillPercentOffset;
+    public int minWaterFillPercentOffset;
+
     [Range(0, 100)]
-    public int fillPercent;
+    public int waterFillPercent;
 
     //Colors for Island and Water 
     //TODO To be replaced with textures
@@ -61,6 +64,10 @@ public class MapGenerator : MonoBehaviour
 
     //Chunk Grid Size
     public Vector2Int chunksGridSize;
+
+    public float totalGridWidth = 10f;  // Total width of the grid in Unity units
+    public float totalGridHeight = 10f; // Total height of the grid in Unity units
+
     Chunk[,] chunks;
     private void Start()
     {
@@ -104,7 +111,7 @@ public class MapGenerator : MonoBehaviour
         {
             for (int y = 0; y < height; y++)
             {
-                int currentFill = fillPercent + rand.Next(-10, 10);
+                int currentFill = waterFillPercent + rand.Next(minWaterFillPercentOffset, maxWaterFillPercentOffset);
                 if (x == 0 || x == width - 1 || y == 0 || y == height - 1)
                 {
                     newMap[x, y] = 1;
@@ -170,18 +177,23 @@ public class MapGenerator : MonoBehaviour
 
     void LoadInSquares()
     {
+        float squareWidth = totalGridWidth / (chunksGridSize.x * chunkDimension.x);
+        float squareHeight = totalGridHeight / (chunksGridSize.y * chunkDimension.y);
+
         for (int chunkX = 0; chunkX < chunksGridSize.x; chunkX++)
         {
             for (int chunkY = 0; chunkY < chunksGridSize.y; chunkY++)
             {
                 GameObject chunkHolder = new GameObject();
-                chunkHolder.transform.position = new Vector2(chunkX * chunkDimension.x, chunkY * chunkDimension.y);
+                chunkHolder.transform.position = new Vector2(chunkX * chunkDimension.x * squareWidth, chunkY * chunkDimension.y * squareHeight);
 
                 for (int x = 0; x < chunkDimension.x; x++)
                 {
                     for (int y = 0; y < chunkDimension.y; y++)
                     {
-                        GameObject squareObj = Instantiate(squarePrefab, new Vector2(chunkHolder.transform.position.x + x, chunkHolder.transform.position.y + y), Quaternion.identity, chunkHolder.transform);
+                        GameObject squareObj = Instantiate(squarePrefab, new Vector2(chunkHolder.transform.position.x + x * squareWidth, chunkHolder.transform.position.y + y * squareHeight), Quaternion.identity, chunkHolder.transform);
+                        squareObj.transform.localScale = new Vector2(squareWidth, squareHeight); // Scale the square
+
                         SpriteRenderer render = squareObj.GetComponent<SpriteRenderer>();
                         Square square = new Square(render, chunkX * chunkDimension.x + x, chunkY * chunkDimension.y + y);
                         squares.Add(square);
@@ -190,6 +202,7 @@ public class MapGenerator : MonoBehaviour
             }
         }
     }
+
     void UpdateSquares(Chunk[,] chunks)
     {
         for (int chunkX = 0; chunkX < chunks.GetLength(0); chunkX += 1)
