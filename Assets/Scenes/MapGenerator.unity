@@ -152,15 +152,19 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f95f7e2e63f325640bfa3d0a879eb7a5, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  chunkDimension: {x: 50, y: 50}
+  chunkDimension: {x: 25, y: 25}
+  chunksGridSize: {x: 5, y: 5}
   seed: 
   useRandom: 1
-  fillPercent: 55
+  maxWaterFillPercentOffset: 15
+  minWaterFillPercentOffset: -3
+  waterFillPercent: 47
   waterColor: {r: 0.0652011, g: 0.6365369, b: 0.9339623, a: 1}
   islandColor: {r: 0.12011075, g: 1, b: 0, a: 1}
   squarePrefab: {fileID: 9147949857193018822, guid: 44f7e307dad8f9942adc830534e8aa37, type: 3}
   iterations: 4
-  chunksGridSize: {x: 3, y: 3}
+  totalGridWidth: 400
+  totalGridHeight: 400
 --- !u!4 &471950958
 Transform:
   m_ObjectHideFlags: 0
