@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using Unity.VisualScripting;
 using UnityEngine;
+using UnityEngine.UIElements;
 
 public class PlayerShipController : MonoBehaviour
 {
@@ -81,6 +82,10 @@ public class PlayerShipController : MonoBehaviour
     {
         float speedBoost;
         // Use the sine function to get the speed boost, with a phase shift for negative angles
+        if (relativeAngle > 180)
+        {
+            relativeAngle -= 360;
+        }
         if (relativeAngle >= 0)
         {
             speedBoost = 3*Mathf.Sin(relativeAngle * Mathf.Deg2Rad);
