@@ -114,10 +114,5 @@ public class PlayerShipController : MonoBehaviour
     {
         return sailObject.transform.up;
     }
-    private void OnDrawGizmos()
-    {
-     
-
-  
-    }
+ 
 }
