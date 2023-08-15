@@ -156,8 +156,8 @@ MonoBehaviour:
   sailObject: {fileID: 1281762078}
   rotationSpeed: 100
   sailRotationSpeed: 50
-  baseSpeed: 5
-  maxSpeed: 10
+  baseSpeed: 1
+  maxSpeed: 3
 --- !u!212 &314498722
 SpriteRenderer:
   m_ObjectHideFlags: 0
