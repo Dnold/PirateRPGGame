@@ -22,6 +22,13 @@ public class PlayerShipController : MonoBehaviour
     }
     void Update()
     {
+        //Draw Wind Dir
+        Vector3 windStartingPoint = new Vector3(0, 0, 0);  // For example, the origin. Adjust as needed.
+        float windRayLength = 10f;  // Arbitrary length. Adjust as needed.
+        Debug.DrawRay(windStartingPoint, windDirection * windRayLength, Color.red);
+
+        //Draw Player Travel Dir
+        Debug.DrawRay(transform.position,transform.up * 5, Color.blue);
         // Wenn W gedrückt wird, erhöhe den Gang (aber nicht über den maximalen Wert).
         if (Input.GetKeyDown(KeyCode.W) && gearState < 3)
         {
@@ -38,7 +45,7 @@ public class PlayerShipController : MonoBehaviour
         currentSpeed = maxSpeed * gearSpeeds[gearState + 3]; // +3, um den Index im Bereich von 0 bis 6 zu halten.
 
         // Bewege das Schiff basierend auf der aktuellen Geschwindigkeit.
-        transform.Translate(transform.up * currentSpeed * Time.deltaTime, Space.World);
+        transform.position += transform.up * currentSpeed * Time.deltaTime;
 
         if (Input.GetKey(KeyCode.A))
         {
@@ -67,7 +74,7 @@ public class PlayerShipController : MonoBehaviour
         float speedBoost = CalculateSpeedBoost(CheckWindAngleToSail());
         float effectiveSpeed = baseSpeed + baseSpeed * speedBoost;
 
-        transform.Translate(transform.up * effectiveSpeed * Time.deltaTime, Space.World);
+        transform.position += transform.up * effectiveSpeed * Time.deltaTime;
 
     }
     float CalculateSpeedBoost(float relativeAngle)
@@ -106,5 +113,11 @@ public class PlayerShipController : MonoBehaviour
     Vector2 GetSailDirection()
     {
         return sailObject.transform.up;
+    }
+    private void OnDrawGizmos()
+    {
+     
+
+  
     }
 }
