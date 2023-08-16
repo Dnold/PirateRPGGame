@@ -15,8 +15,8 @@ public class PlayerShipController : MonoBehaviour
 
     public float maxSpeed = 10f; // Maximale Geschwindigkeit des Schiffes.
     private int gearState = 0;   // Der aktuelle Gang des Schiffes: -3, -2, -1, 0, 1, 2, 3.
-    private float[] gearSpeeds = { -1f, -0.5f, -0.25f, 0f, 0.25f, 0.5f, 1f }; // Geschwindigkeitsmultiplikatoren für jeden Gang.
-    private float currentSpeed;  // Die aktuelle Geschwindigkeit des Schiffes basierend auf dem gewählten Gang.
+    private float[] gearSpeeds = { -1f, -0.5f, -0.25f, 0f, 0.25f, 0.5f, 1f }; // Geschwindigkeitsmultiplikatoren fï¿½r jeden Gang.
+    private float currentSpeed;  // Die aktuelle Geschwindigkeit des Schiffes basierend auf dem gewï¿½hlten Gang.
     void Start()
     {
         StartCoroutine(RandomizeWindDir());
@@ -29,14 +29,14 @@ public class PlayerShipController : MonoBehaviour
         Debug.DrawRay(windStartingPoint, windDirection * windRayLength, Color.red);
 
         //Draw Player Travel Dir
-        Debug.DrawRay(transform.position,transform.up * 5, Color.blue);
-        // Wenn W gedrückt wird, erhöhe den Gang (aber nicht über den maximalen Wert).
+        Debug.DrawRay(transform.position, transform.up * 5, Color.blue);
+        // Wenn W gedrï¿½ckt wird, erhï¿½he den Gang (aber nicht ï¿½ber den maximalen Wert).
         if (Input.GetKeyDown(KeyCode.W) && gearState < 3)
         {
             gearState++;
         }
 
-        // Wenn S gedrückt wird, verringere den Gang (aber nicht unter den minimalen Wert).
+        // Wenn S gedrï¿½ckt wird, verringere den Gang (aber nicht unter den minimalen Wert).
         if (Input.GetKeyDown(KeyCode.S) && gearState > -3)
         {
             gearState--;
@@ -62,10 +62,10 @@ public class PlayerShipController : MonoBehaviour
             sailObject.transform.Rotate(Vector3.forward * sailRotationSpeed * Time.deltaTime);
         }
 
-        // Wenn die E-Taste gedrückt wird, dreht das Segel nach rechts.
+        // Wenn die E-Taste gedrï¿½ckt wird, dreht das Segel nach rechts.
         if (Input.GetKey(KeyCode.E))
         {
-            sailObject.transform.Rotate(-Vector3.forward * sailRotationSpeed * Time.deltaTime,Space.World);
+            sailObject.transform.Rotate(-Vector3.forward * sailRotationSpeed * Time.deltaTime, Space.World);
         }
 
         ApplySpeedBoost();
@@ -88,11 +88,11 @@ public class PlayerShipController : MonoBehaviour
         }
         if (relativeAngle >= 0)
         {
-            speedBoost = 3*Mathf.Sin(relativeAngle * Mathf.Deg2Rad);
+            speedBoost = 3 * Mathf.Sin(relativeAngle * Mathf.Deg2Rad);
         }
         else
         {
-            speedBoost = 3*Mathf.Sin((relativeAngle + 180f) * Mathf.Deg2Rad);
+            speedBoost = 3 * Mathf.Sin((relativeAngle + 180f) * Mathf.Deg2Rad);
         }
         return speedBoost;
     }
@@ -119,5 +119,5 @@ public class PlayerShipController : MonoBehaviour
     {
         return sailObject.transform.up;
     }
- 
+
 }
