@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
+using UnityEngine.Tilemaps;
 class Chunk
 {
     public Vector2 center;
@@ -33,9 +34,13 @@ class Square
 }
 public class MapGenerator : MonoBehaviour
 {
+    public Tile islandTile;
+    public Tile waterTile;
 
+    public Tilemap tilemap;
 
     //Size of a Chunk
+
     [Tooltip("Don't set this >32. may crash")]
     public Vector2Int chunkDimension;
     //Chunk Grid Size
@@ -86,7 +91,7 @@ public class MapGenerator : MonoBehaviour
                 chunks[x, y] = new Chunk(pos, chunkDimension.x, chunkDimension.y, FillMapRandom(chunkDimension.x, chunkDimension.y));
             }
         }
-        LoadInSquares();
+    
         for (int x = 0; x < chunksGridSize.x; x++)
         {
             for (int y = 0; y < chunksGridSize.y; y++)
@@ -97,7 +102,7 @@ public class MapGenerator : MonoBehaviour
                 }
             }
         }
-        UpdateSquares(chunks);
+        LoadInTiles();
 
     }
     int[,] FillMapRandom(int width, int height)
@@ -177,61 +182,25 @@ public class MapGenerator : MonoBehaviour
         return count;
     }
 
-    void LoadInSquares()
+   void LoadInTiles()
     {
-        float squareWidth = totalGridWidth / (chunksGridSize.x * chunkDimension.x);
-        float squareHeight = totalGridHeight / (chunksGridSize.y * chunkDimension.y);
-
         for (int chunkX = 0; chunkX < chunksGridSize.x; chunkX++)
         {
             for (int chunkY = 0; chunkY < chunksGridSize.y; chunkY++)
             {
-                GameObject chunkHolder = new GameObject();
-                chunkHolder.transform.position = new Vector2(chunkX * chunkDimension.x * squareWidth, chunkY * chunkDimension.y * squareHeight);
-
                 for (int x = 0; x < chunkDimension.x; x++)
                 {
                     for (int y = 0; y < chunkDimension.y; y++)
                     {
-                        GameObject squareObj = Instantiate(squarePrefab, new Vector2(chunkHolder.transform.position.x + x * squareWidth, chunkHolder.transform.position.y + y * squareHeight), Quaternion.identity, chunkHolder.transform);
-                        squareObj.transform.localScale = new Vector2(squareWidth, squareHeight); // Scale the square
-
-                        SpriteRenderer render = squareObj.GetComponent<SpriteRenderer>();
-                        Square square = new Square(render, chunkX * chunkDimension.x + x, chunkY * chunkDimension.y + y);
-                        squares.Add(square);
-                    }
-                }
-            }
-        }
-    }
-
-    void UpdateSquares(Chunk[,] chunks)
-    {
-        for (int chunkX = 0; chunkX < chunks.GetLength(0); chunkX += 1)
-        {
-            for (int chunkY = 0; chunkY < chunks.GetLength(1); chunkY += 1)
-            {
-                for (int x = 0; x < chunks[chunkX, chunkY].map.GetLength(0); x++)
-                {
-                    for (int y = 0; y < chunks[chunkX, chunkY].map.GetLength(1); y++)
-                    {
-                        Square square = squares.FirstOrDefault(e => e.x == x + chunkX * chunkDimension.x && e.y == y + chunkY * chunkDimension.y);
-                        if (square != null)
+                        Vector3Int position = new Vector3Int(chunkX * chunkDimension.x + x, chunkY * chunkDimension.y + y, 0);
+                        if (chunks[chunkX, chunkY].map[x, y] == 1)
                         {
-                            if (chunks[chunkX, chunkY].map[x, y] == 1)
-                            {
-                                square.sprite.color = waterColor;
-                            }
-                            else
-                            {
-                                square.sprite.color = islandColor;
-                            }
+                            tilemap.SetTile(position, waterTile);
                         }
                         else
                         {
-                            Debug.LogError("No matching square found");
+                            tilemap.SetTile(position, islandTile);
                         }
-                        // Yield control back to Unity to allow for screen updates.
                     }
                 }
             }
