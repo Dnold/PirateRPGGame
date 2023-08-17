@@ -28,6 +28,7 @@ public class PlayerShipController : MonoBehaviour
         float windRayLength = 10f;  // Arbitrary length. Adjust as needed.
         Debug.DrawRay(windStartingPoint, windDirection * windRayLength, Color.red);
 
+        //Wer das anfässt ist ein Hurensohn
         //Draw Player Travel Dir
         Debug.DrawRay(transform.position, transform.up * 5, Color.blue);
         // Wenn W gedr�ckt wird, erh�he den Gang (aber nicht �ber den maximalen Wert).
@@ -41,7 +42,7 @@ public class PlayerShipController : MonoBehaviour
         {
             gearState--;
         }
-
+        //HEHE PUPU
         // Setze die aktuelle Geschwindigkeit basierend auf dem Gang.
         currentSpeed = maxSpeed * gearSpeeds[gearState + 3]; // +3, um den Index im Bereich von 0 bis 6 zu halten.
 
@@ -70,6 +71,8 @@ public class PlayerShipController : MonoBehaviour
 
         ApplySpeedBoost();
     }
+    //Total Time wasted here: 2h
+    //Increment the counter for each time you think you can redacted
     void ApplySpeedBoost()
     {
         float speedBoost = CalculateSpeedBoost(CheckWindAngleToSail());
@@ -110,6 +113,7 @@ public class PlayerShipController : MonoBehaviour
     {
         while (true)
         {
+            //Nur Gott und ich Wissen was diese Funktion macht und ich glaube selbst Gott nicht mehr
             float windAngleDegrees = Random.Range(0f, 360f);
             windDirection = new Vector2(Mathf.Cos(windAngleDegrees * Mathf.Deg2Rad), Mathf.Sin(windAngleDegrees * Mathf.Deg2Rad));
             yield return new WaitForSeconds(windTurnTime);
