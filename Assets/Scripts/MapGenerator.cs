@@ -10,6 +10,7 @@ class Chunk
     public Vector2 center;
     public float height; public float width;
     public int[,] map;
+    public List<List<Coord>> regions;
 
     public Chunk(Vector2 _center, float _height, float _width, int[,] _map)
     {
@@ -49,11 +50,13 @@ public class MapGenerator : MonoBehaviour
 {
     public Tile islandTile;
     public Tile waterTile;
+    public Tile sandTile;
 
     public Tilemap tilemap;
 
     //Size of a Chunk
     public int regionThreshold = 5;
+    public int sandThreshold = 1;
     [Tooltip("Don't set this >32. may crash")]
     public Vector2Int chunkDimension;
     //Chunk Grid Size
@@ -112,12 +115,52 @@ public class MapGenerator : MonoBehaviour
                 for (int i = 0; i < iterations; i++)
                 {
                     chunks[x, y].map = SmoothMap(chunkDimension.x, chunkDimension.y, chunks[x, y].map);
-                    chunks[x, y].map = ProcessMap(chunks[x, y].map);
+                    chunks[x, y].map = ProcessMap(chunks[x, y].map,0,regionThreshold);
+                    chunks[x, y].regions = GetRegions(0, chunks[x,y].map);
+                    chunks[x,y].map = Sandbanks(chunks[x, y].regions, chunks[x,y].map);
+                    chunks[x, y].map = ProcessMap(chunks[x, y].map,2,sandThreshold);
                 }
             }
         }
 
         LoadInTiles();
+
+    }
+    int[,] Sandbanks(List<List<Coord>> regions,int[,] map)
+    {
+        for(int i = 0; i < regions.Count; i++)
+        {
+            foreach(var region in regions)
+            {
+                foreach(var tile in region)
+                {
+                    int waterCount = WaterCount(tile.tileX, tile.tileY, map);
+                    if(waterCount > 0)
+                    {
+                        map[tile.tileX, tile.tileY] = 2;
+                    }
+                }
+            }
+        }
+        return map;
+    }
+    int WaterCount(int xTile, int yTile, int[,] map)
+    {
+        int count = 0;
+        for(int x = xTile-1; x < xTile+1; x++)
+        {
+            for(int y = yTile-1; y < yTile+1; y++)
+            {
+                if (IsInMapRange(x, y))
+                {
+                    if (map[x, y] == 1)
+                    {
+                        count++;
+                    }
+                }
+            }
+        }
+        return count;
 
     }
     List<Coord> GetRegionTiles(int startX, int startY, int[,] map)
@@ -150,13 +193,13 @@ public class MapGenerator : MonoBehaviour
         }
         return tiles;
     }
-    int[,] ProcessMap(int[,] map)
+    int[,] ProcessMap(int[,] map,int TileType,int threshold)
     {
-        List<List<Coord>> wallRegions = GetRegions(0, map);
+        List<List<Coord>> wallRegions = GetRegions(TileType, map);
 
         foreach (var wallRegion in wallRegions)
         {
-            if (wallRegion.Count < regionThreshold)
+            if (wallRegion.Count < threshold)
             {
                 foreach (Coord tile in wallRegion)
                 {
@@ -283,6 +326,10 @@ public class MapGenerator : MonoBehaviour
                         if (chunks[chunkX, chunkY].map[x, y] == 1)
                         {
                             tilemap.SetTile(position, waterTile);
+                        }
+                        else if (chunks[chunkX, chunkY].map[x,y] == 2)
+                        {
+                            tilemap.SetTile(position, sandTile);
                         }
                         else
                         {
