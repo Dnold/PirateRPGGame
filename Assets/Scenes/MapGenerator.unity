@@ -155,16 +155,17 @@ MonoBehaviour:
   islandTile: {fileID: 11400000, guid: e0135aacb0233e14baf68f96a6c1d2b6, type: 2}
   waterTile: {fileID: 11400000, guid: 00e3f1b48eb408141af301045f29aa66, type: 2}
   sandTile: {fileID: 11400000, guid: fa4fe15f3c91590478ff1e41572864e7, type: 2}
+  grassTile: {fileID: 11400000, guid: eeffc24d851d72f4090cd3872ea5c8d1, type: 2}
   tilemap: {fileID: 605657242}
-  regionThreshold: 50
-  sandThreshold: 5
+  regionThreshold: 150
+  sandThreshold: 2
   chunkDimension: {x: 50, y: 50}
   chunksGridSize: {x: 15, y: 15}
   seed: 
   useRandom: 1
-  maxWaterFillPercentOffset: 8
+  maxWaterFillPercentOffset: 3
   minWaterFillPercentOffset: -6
-  waterFillPercent: 49
+  waterFillPercent: 47
   waterColor: {r: 0.0652011, g: 0.6365369, b: 0.9339623, a: 1}
   islandColor: {r: 0.12011075, g: 1, b: 0, a: 1}
   squarePrefab: {fileID: 9147949857193018822, guid: 44f7e307dad8f9942adc830534e8aa37, type: 3}
@@ -423,7 +424,7 @@ Grid:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1515901557}
   m_Enabled: 1
-  m_CellSize: {x: 0.5, y: 0.5, z: 0}
+  m_CellSize: {x: 1, y: 1, z: 1}
   m_CellGap: {x: 0, y: 0, z: 0}
   m_CellLayout: 0
   m_CellSwizzle: 0

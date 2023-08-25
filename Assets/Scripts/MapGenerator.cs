@@ -2,8 +2,10 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using Unity.Collections;
+using Unity.Mathematics;
 using Unity.VisualScripting;
 using UnityEngine;
+using UnityEngine.Serialization;
 using UnityEngine.Tilemaps;
 class Chunk
 {
@@ -51,6 +53,7 @@ public class MapGenerator : MonoBehaviour
     public Tile islandTile;
     public Tile waterTile;
     public Tile sandTile;
+    public Tile grassTile;
 
     public Tilemap tilemap;
 
@@ -114,11 +117,21 @@ public class MapGenerator : MonoBehaviour
             {
                 for (int i = 0; i < iterations; i++)
                 {
-                    chunks[x, y].map = SmoothMap(chunkDimension.x, chunkDimension.y, chunks[x, y].map);
-                    chunks[x, y].map = ProcessMap(chunks[x, y].map,0,regionThreshold);
-                    chunks[x, y].regions = GetRegions(0, chunks[x,y].map);
-                    chunks[x,y].map = Sandbanks(chunks[x, y].regions, chunks[x,y].map);
-                    chunks[x, y].map = ProcessMap(chunks[x, y].map,2,sandThreshold);
+                    int[,] newMap = chunks[x, y].map;
+                    List<List<Coord>> regions = GetRegions(0, newMap);
+                    newMap = SmoothMap(chunkDimension.x, chunkDimension.y, newMap);
+                    newMap = ProcessMap(newMap, 0, regionThreshold);
+                    
+                    newMap = Sandbanks(regions, newMap);
+
+                    newMap = ProcessMap(newMap, 2, sandThreshold);
+                    //newMap = SetGrassInRegions(regions, newMap);
+
+                   
+
+                    chunks[x, y].regions = regions;
+                    chunks[x, y].map = newMap;
+
                 }
             }
         }
@@ -126,16 +139,16 @@ public class MapGenerator : MonoBehaviour
         LoadInTiles();
 
     }
-    int[,] Sandbanks(List<List<Coord>> regions,int[,] map)
+    int[,] Sandbanks(List<List<Coord>> regions, int[,] map)
     {
-        for(int i = 0; i < regions.Count; i++)
+        for (int i = 0; i < regions.Count; i++)
         {
-            foreach(var region in regions)
+            foreach (var region in regions)
             {
-                foreach(var tile in region)
+                foreach (var tile in region)
                 {
                     int waterCount = WaterCount(tile.tileX, tile.tileY, map);
-                    if(waterCount > 0)
+                    if (waterCount > 0)
                     {
                         map[tile.tileX, tile.tileY] = 2;
                     }
@@ -147,9 +160,9 @@ public class MapGenerator : MonoBehaviour
     int WaterCount(int xTile, int yTile, int[,] map)
     {
         int count = 0;
-        for(int x = xTile-1; x < xTile+1; x++)
+        for (int x = xTile - 1; x < xTile + 1; x++)
         {
-            for(int y = yTile-1; y < yTile+1; y++)
+            for (int y = yTile - 1; y < yTile + 1; y++)
             {
                 if (IsInMapRange(x, y))
                 {
@@ -193,7 +206,7 @@ public class MapGenerator : MonoBehaviour
         }
         return tiles;
     }
-    int[,] ProcessMap(int[,] map,int TileType,int threshold)
+    int[,] ProcessMap(int[,] map, int TileType, int threshold)
     {
         List<List<Coord>> wallRegions = GetRegions(TileType, map);
 
@@ -236,7 +249,7 @@ public class MapGenerator : MonoBehaviour
         int[,] newMap = new int[width, height];
         if (useRandom)
         {
-            seed = Time.time.ToString() + Random.Range(0, 2000);
+            seed = Time.time.ToString() + UnityEngine.Random.Range(0, 2000);
         }
         System.Random rand = new System.Random(seed.GetHashCode());
 
@@ -288,6 +301,28 @@ public class MapGenerator : MonoBehaviour
     {
         return x >= 0 && x < chunkDimension.x && y >= 0 && y < chunkDimension.y;
     }
+    int[,] SetGrassInRegions(List<List<Coord>> regions, int[,] map)
+    {
+        foreach (var region in regions)
+        {
+            
+            foreach (Coord tile in region)
+            {
+                // Check if the current tile is an island tile
+                if (map[tile.tileX, tile.tileY] == 0) // assuming 0 is island
+                {
+
+                    // For every second island tile, check with randomness
+                    if (UnityEngine.Random.Range(0f, 1f) >= 0.5f)
+                    {
+                        map[tile.tileX, tile.tileY] = 3; // 3 for grass
+                    }
+                }
+            }
+        }
+        return map;
+    }
+
     int GetNeighbourCount(int gridX, int gridY, int[,] map)
     {
         int count = 0;
@@ -327,9 +362,13 @@ public class MapGenerator : MonoBehaviour
                         {
                             tilemap.SetTile(position, waterTile);
                         }
-                        else if (chunks[chunkX, chunkY].map[x,y] == 2)
+                        else if (chunks[chunkX, chunkY].map[x, y] == 2)
                         {
                             tilemap.SetTile(position, sandTile);
+                        }
+                        else if (chunks[chunkX, chunkY].map[x, y] == 3)
+                        {
+                            tilemap.SetTile(position, grassTile);
                         }
                         else
                         {
