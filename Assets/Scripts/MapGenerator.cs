@@ -1,6 +1,8 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using Unity.Collections;
+using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.Tilemaps;
 class Chunk
@@ -15,6 +17,17 @@ class Chunk
         height = _height;
         width = _width;
         map = _map;
+    }
+}
+public class Coord
+{
+    public int tileX;
+    public int tileY;
+
+    public Coord(int x, int y)
+    {
+        tileX = x;
+        tileY = y;
     }
 }
 
@@ -40,7 +53,7 @@ public class MapGenerator : MonoBehaviour
     public Tilemap tilemap;
 
     //Size of a Chunk
-
+    public int regionThreshold = 5;
     [Tooltip("Don't set this >32. may crash")]
     public Vector2Int chunkDimension;
     //Chunk Grid Size
@@ -70,7 +83,7 @@ public class MapGenerator : MonoBehaviour
     //Smoothing
     public int iterations;
 
-    
+
 
     public float totalGridWidth = 10f;  // Total width of the grid in Unity units
     public float totalGridHeight = 10f; // Total height of the grid in Unity units
@@ -91,7 +104,7 @@ public class MapGenerator : MonoBehaviour
                 chunks[x, y] = new Chunk(pos, chunkDimension.x, chunkDimension.y, FillMapRandom(chunkDimension.x, chunkDimension.y));
             }
         }
-    
+
         for (int x = 0; x < chunksGridSize.x; x++)
         {
             for (int y = 0; y < chunksGridSize.y; y++)
@@ -99,12 +112,82 @@ public class MapGenerator : MonoBehaviour
                 for (int i = 0; i < iterations; i++)
                 {
                     chunks[x, y].map = SmoothMap(chunkDimension.x, chunkDimension.y, chunks[x, y].map);
+                    chunks[x, y].map = ProcessMap(chunks[x, y].map);
                 }
             }
         }
+
         LoadInTiles();
 
     }
+    List<Coord> GetRegionTiles(int startX, int startY, int[,] map)
+    {
+        List<Coord> tiles = new List<Coord>();
+        int[,] mapFlags = new int[chunkDimension.x, chunkDimension.y];
+        int tileType = map[startX, startY];
+        Queue<Coord> queue = new Queue<Coord>();
+        queue.Enqueue(new Coord(startX, startY));
+        mapFlags[startX, startY] = 1;
+
+        while (queue.Count > 0)
+        {
+            Coord tile = queue.Dequeue();
+            tiles.Add(tile);
+            for (int x = tile.tileX - 1; x <= tile.tileX + 1; x++)
+            {
+                for (int y = tile.tileY - 1; y <= tile.tileY + 1; y++)
+                {
+                    if (IsInMapRange(x, y) && (y == tile.tileY || x == tile.tileX))
+                    {
+                        if (mapFlags[x, y] == 0 && map[x, y] == tileType)
+                        {
+                            mapFlags[x, y] = 1;
+                            queue.Enqueue(new Coord(x, y));
+                        }
+                    }
+                }
+            }
+        }
+        return tiles;
+    }
+    int[,] ProcessMap(int[,] map)
+    {
+        List<List<Coord>> wallRegions = GetRegions(0, map);
+
+        foreach (var wallRegion in wallRegions)
+        {
+            if (wallRegion.Count < regionThreshold)
+            {
+                foreach (Coord tile in wallRegion)
+                {
+                    map[tile.tileX, tile.tileY] = 1;
+                }
+            }
+        }
+        return map;
+    }
+    List<List<Coord>> GetRegions(int tileType, int[,] map)
+    {
+        List<List<Coord>> regions = new List<List<Coord>>();
+        int[,] mapFlags = new int[chunkDimension.x, chunkDimension.y];
+        for (int x = 0; x < chunkDimension.x; x++)
+        {
+            for (int y = 0; y < chunkDimension.y; y++)
+            {
+                if (mapFlags[x, y] == 0 && map[x, y] == tileType)
+                {
+                    List<Coord> newRegion = GetRegionTiles(x, y, map);
+                    regions.Add(newRegion);
+                    foreach (Coord tile in newRegion)
+                    {
+                        mapFlags[tile.tileX, tile.tileY] = 1;
+                    }
+                }
+            }
+        }
+        return regions;
+    }
+
     int[,] FillMapRandom(int width, int height)
     {
         int[,] newMap = new int[width, height];
@@ -158,6 +241,10 @@ public class MapGenerator : MonoBehaviour
         }
         return map;
     }
+    bool IsInMapRange(int x, int y)
+    {
+        return x >= 0 && x < chunkDimension.x && y >= 0 && y < chunkDimension.y;
+    }
     int GetNeighbourCount(int gridX, int gridY, int[,] map)
     {
         int count = 0;
@@ -166,7 +253,7 @@ public class MapGenerator : MonoBehaviour
         {
             for (int neighbourY = gridY - 1; neighbourY <= gridY + 1; neighbourY++)
             {
-                if (neighbourX >= 0 && neighbourX < chunkDimension.x & neighbourY >= 0 && neighbourY < chunkDimension.y)
+                if (IsInMapRange(neighbourX, neighbourY))
                 {
                     if (neighbourX != gridX || neighbourY != gridY)
                     {
@@ -182,7 +269,7 @@ public class MapGenerator : MonoBehaviour
         return count;
     }
 
-   void LoadInTiles()
+    void LoadInTiles()
     {
         for (int chunkX = 0; chunkX < chunksGridSize.x; chunkX++)
         {
