@@ -6,6 +6,7 @@ using System.Linq;
 using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.Tilemaps;
+using static MapGenerator;
 
 public static class ToolExtensions
 {
@@ -18,6 +19,7 @@ public static class ToolExtensions
         float randNormal = mean + standardDeviation * (float)randStdNormal;
         return Mathf.Clamp(randNormal, 0f, 1f);  // Ensuring the result stays between 0 and 1
     }
+
 }
 public enum TileType
 {
@@ -32,8 +34,10 @@ public enum TileType
     SmallFlowerYellow = 8,
     MediumFlowerRed = 9,
     MediumFlowerYellow = 10,
-
-
+    shallowWater = 11,
+    lowWater = 12,
+    mediumWater = 13,
+    deepWater = 14
     // ... add other types if needed
 }
 public class MapGenerator : MonoBehaviour
@@ -43,6 +47,11 @@ public class MapGenerator : MonoBehaviour
     public Tile islandTile;
     public Tile waterTile;
     public Tile sandTile;
+
+    public Tile shallowWater;
+    public Tile lowWater;
+    public Tile mediumWater;
+    public Tile deepWater;
 
     public Tile smallGrass;
     public Tile mediumGrass;
@@ -57,8 +66,9 @@ public class MapGenerator : MonoBehaviour
 
     public TileType[] grassTypes = { (TileType)3, (TileType)5, (TileType)6 };
     public TileType[] flowerTypes;
+    public TileType[] waterTypes;
 
-    public Chunk[,] chunks;
+    public Chunk[,] chunks = new Chunk[0, 0];
 
     public Vector2Int gridSize;
     public Vector2Int chunkSize;
@@ -67,15 +77,12 @@ public class MapGenerator : MonoBehaviour
     public string seed;
 
     public float waterFillPercent = 50;
+    public int maxDistanceForIsolatedLand = 3;
     public float flowerFillPercent = 1;
 
     public int smoothIterations = 3;
     public float standardDeviation = 0.15f;  // Adjust as needed. It controls the spread of the distribution.
 
-    public class World
-    {
-
-    }
     public class Chunk
     {
 
@@ -93,6 +100,17 @@ public class MapGenerator : MonoBehaviour
         }
 
     }
+    public class DataTile
+    {
+        public Vector2Int Position { get; set; }
+        public int Distance { get; set; }
+
+        public DataTile(Vector2Int position, int distance)
+        {
+            Position = position;
+            Distance = distance;
+        }
+    }
     void Start()
     {
         GenerateChunks();
@@ -101,6 +119,7 @@ public class MapGenerator : MonoBehaviour
     /// <summary>
     /// Generates chunk data for the entire grid and loads the tiles into the tilemap.
     /// </summary>
+
     public void GenerateChunks()
     {
         // Initialize the chunks array.
@@ -113,6 +132,16 @@ public class MapGenerator : MonoBehaviour
                 CreateChunkAtPosition(x, y);
             }
         }
+        int[,] fullmap = ConcatenateChunks(chunks);
+        int[,] newmap = SetOceanDepth(fullmap);
+        for (int i = 0; i <= smoothIterations; i++)
+        {
+           
+            newmap = BlurOceanDepth(newmap);
+            
+        }
+        
+        chunks = DivideIntoChunks(fullmap, chunkSize);
 
         // Load the generated chunks into the tilemap.
         LoadInTiles();
@@ -130,18 +159,22 @@ public class MapGenerator : MonoBehaviour
 
         // Create a new chunk using the position, size, and a randomly filled map.
         int[,] newmap = FillMapRandom(size);
+        
         for (int i = 0; i <= 3; i++)
         {
             newmap = SmoothMap(size, newmap);
         }
+        newmap = AdjustIsolatedTiles(newmap);
         newmap = ProcessMap(newmap, TileType.Island, 25);
         List<List<Vector2Int>> regions = GetRegions((int)TileType.Island, newmap);
         newmap = SetGrassInRegions(regions, newmap);
         newmap = Sandbanks(regions, newmap);
 
-        chunks[x, y] = new Chunk(pos, size, newmap);
-    }
 
+        chunks[x, y] = new Chunk(pos, size, newmap);
+
+
+    }
     /// <summary>
     /// Fills a 2D map of the given size with random values based on waterFillPercent.
     /// </summary>
@@ -150,7 +183,6 @@ public class MapGenerator : MonoBehaviour
     int[,] FillMapRandom(Vector2Int size)
     {
         int[,] newMap = new int[size.x, size.y];
-
 
         if (useRandom)
         {
@@ -165,19 +197,18 @@ public class MapGenerator : MonoBehaviour
             {
                 if (IsBorder(x, y, size))
                 {
-                    newMap[x, y] = 1;
+                    newMap[x, y] = 1; // Border always filled
                 }
                 else
                 {
-                    // Generate a value based on a normal distribution around waterFillPercent.
-                    float generatedValue = ToolExtensions.NextGaussianFloat(waterFillPercent, standardDeviation);
-                    newMap[x, y] = generatedValue < waterFillPercent ? 1 : 0;
+                    newMap[x, y] = rand.Next(0, 100) < waterFillPercent ? 1 : 0;
                 }
             }
         }
 
         return newMap;
     }
+
 
     /// <summary>
     /// Determines if a given cell is on the border of the map.
@@ -258,7 +289,18 @@ public class MapGenerator : MonoBehaviour
                         tilemapGround.SetTile(position, islandTile);
                         tilemapTop.SetTile(position, mediumFlowerYellow);
                         break;
-
+                    case 11:
+                        tilemapGround.SetTile(position, shallowWater);
+                        break;
+                    case 12:
+                        tilemapGround.SetTile(position, lowWater);
+                        break;
+                    case 13:
+                        tilemapGround.SetTile(position, mediumWater);
+                        break;
+                    case 14:
+                        tilemapGround.SetTile(position, deepWater);
+                        break;
                     default:
                         tilemapGround.SetTile(position, islandTile);
                         break;
@@ -300,7 +342,6 @@ public class MapGenerator : MonoBehaviour
     int GetNeighbourCount(int gridX, int gridY, int[,] map)
     {
         int count = 0;
-
         // Directions representing the 8 neighboring cells
         int[] dirX = { -1, 0, 1, -1, 1, -1, 0, 1 };
         int[] dirY = { -1, -1, -1, 0, 0, 1, 1, 1 };
@@ -321,10 +362,8 @@ public class MapGenerator : MonoBehaviour
                 count++;
             }
         }
-
         return count;
     }
-
     int[,] SmoothMapInRegion(List<Vector2Int> region, int[,] map, TileType targetTile)
     {
         // Iterate only over the tiles in the specified region
@@ -493,7 +532,6 @@ public class MapGenerator : MonoBehaviour
             }
         }
         return tiles;
-
     }
     /// <summary>
     /// Finds the region of a specific tile type within a larger region.
@@ -523,7 +561,6 @@ public class MapGenerator : MonoBehaviour
                 }
             }
         }
-
         return subRegions;
     }
     bool IsInMapRange(int x, int y, int[,] map)
@@ -554,8 +591,6 @@ public class MapGenerator : MonoBehaviour
                 map = RandomizeGrassTypeInRegion(subRegion, map);
                 map = PopulateGrassWithFlowers(subRegion, map);
             }
-
-
         }
         return map;
     }
@@ -575,12 +610,11 @@ public class MapGenerator : MonoBehaviour
     {
         if (grassTypes.Contains((TileType)map[region[0].x, region[0].y]))
         {
-
             int rand = Random.Range(0, flowerTypes.Length);
             foreach (var tile in region)
             {
-                float generatedValue = ToolExtensions.NextGaussianFloat(flowerFillPercent, standardDeviation);
-                if (generatedValue < waterFillPercent)
+                int generatedValue = Random.Range(0, 100);
+                if (generatedValue < flowerFillPercent)
                 {
                     map[tile.x, tile.y] = (int)flowerTypes[rand];
                 }
@@ -623,6 +657,213 @@ public class MapGenerator : MonoBehaviour
             }
         }
         return count;
-
     }
+    public int[,] ConcatenateChunks(Chunk[,] chunkse)
+    {
+        int chunkSizeX = chunkse[0, 0].size.x;
+        int chunkSizeY = chunkse[0, 0].size.y;
+        int numChunksX = chunkse.GetLength(0);
+        int numChunksY = chunkse.GetLength(1);
+        int fullMapSizeX = chunkSizeX * numChunksX;
+        int fullMapSizeY = chunkSizeY * numChunksY;
+        int[,] fullMap = new int[fullMapSizeX, fullMapSizeY];
+
+        for (int cx = 0; cx < numChunksX; cx++)
+        {
+            for (int cy = 0; cy < numChunksY; cy++)
+            {
+                for (int x = 0; x < chunkSizeX; x++)
+                {
+                    for (int y = 0; y < chunkSizeY; y++)
+                    {
+                        fullMap[cx * chunkSizeX + x, cy * chunkSizeY + y] = chunkse[cx, cy].map[x, y];
+                    }
+                }
+            }
+        }
+
+        return fullMap;
+    }
+    public Chunk[,] DivideIntoChunks(int[,] fullMap, Vector2Int chunkSize)
+    {
+        int width = fullMap.GetLength(0);
+        int height = fullMap.GetLength(1);
+        int numChunksX = width / chunkSize.x;
+        int numChunksY = height / chunkSize.y;
+        Chunk[,] chunks = new Chunk[numChunksX, numChunksY];
+
+        for (int cx = 0; cx < numChunksX; cx++)
+        {
+            for (int cy = 0; cy < numChunksY; cy++)
+            {
+                Vector2Int chunkCenter = new Vector2Int(cx * chunkSize.x + chunkSize.x / 2, cy * chunkSize.y + chunkSize.y / 2);
+                int[,] chunkMap = new int[chunkSize.x, chunkSize.y];
+                for (int x = 0; x < chunkSize.x; x++)
+                {
+                    for (int y = 0; y < chunkSize.y; y++)
+                    {
+                        chunkMap[x, y] = fullMap[cx * chunkSize.x + x, cy * chunkSize.y + y];
+                    }
+                }
+                chunks[cx, cy] = new Chunk(chunkCenter, chunkSize, chunkMap);
+            }
+        }
+
+        return chunks;
+    }
+    public int[,] SetOceanDepth(int[,] fullMap)
+    {
+        int width = fullMap.GetLength(0);
+        int height = fullMap.GetLength(1);
+
+        for (int x = 0; x < width; x++)
+        {
+            for (int y = 0; y < height; y++)
+            {
+                if (fullMap[x, y] == (int)TileType.Water)
+                {
+                    int distance = DistanceToNearestTile(new Vector2Int(x, y), (int)TileType.Island, fullMap);
+
+                    if (distance >= 0) // Ensure there's an island in proximity
+                    {
+                        if (distance < 2)
+                        {
+                            fullMap[x, y] = (int)TileType.shallowWater;
+                        }
+                        else if (distance < 5)
+                        {
+                            fullMap[x, y] = (int)TileType.lowWater;
+                        }
+                        else if (distance < 9)
+                        {
+                            fullMap[x, y] = (int)TileType.mediumWater;
+                        }
+                        else
+                        {
+                            fullMap[x, y] = (int)TileType.deepWater;
+                        }
+                    }
+                }
+            }
+        }
+        return fullMap;
+    }
+
+    /// <summary>
+    /// Calculates the distance from a given water tile to the nearest island tile using Breadth-First Search.
+    /// </summary>
+    /// <param name="start">The starting position of the water tile.</param>
+    /// <param name="map">The map containing the tile data, represented as a 2D array.</param>
+    /// <returns>
+    /// Returns the distance to the nearest island tile as an integer.
+    /// If no island tile is found, returns -1.
+    /// </returns>
+    /// 
+    public int DistanceToNearestTile(Vector2Int start, int targetTileType, int[,] map)
+    {
+        // Directions for left, right, up, down
+        Vector2Int[] directions =
+        {
+        new Vector2Int(-1, 0),
+        new Vector2Int(1, 0),
+        new Vector2Int(0, -1),
+        new Vector2Int(0, 1)
+    };
+
+        int width = map.GetLength(0);
+        int height = map.GetLength(1);
+
+        bool[,] visited = new bool[width, height];
+        Queue<DataTile> queue = new Queue<DataTile>();
+        queue.Enqueue(new DataTile(start, 0));
+
+        while (queue.Count > 0)
+        {
+            DataTile currentTile = queue.Dequeue();
+
+            foreach (Vector2Int dir in directions)
+            {
+                Vector2Int nextPos = currentTile.Position + dir;
+
+                // Check if the tile is within map boundaries and hasn't been visited yet
+                if (nextPos.x >= 0 && nextPos.x < width && nextPos.y >= 0 && nextPos.y < height && !visited[nextPos.x, nextPos.y])
+                {
+                    visited[nextPos.x, nextPos.y] = true;
+
+                    // If the next tile matches the targetTileType, return its distance from the start
+                    if (map[nextPos.x, nextPos.y] == targetTileType)
+                    {
+                        return currentTile.Distance + 1;
+                    }
+
+                    queue.Enqueue(new DataTile(nextPos, currentTile.Distance + 1));
+                }
+            }
+        }
+
+        return -1;  // Return -1 if no target tile is found
+    }
+
+    public int[,] BlurOceanDepth(int[,] map)
+    {
+        int width = map.GetLength(0);
+        int height = map.GetLength(1);
+        int[,] blurredMap = new int[width, height];
+
+        for (int x = 1; x < width - 1; x++)
+        {
+            for (int y = 1; y < height - 1; y++)
+            {
+                int sum = 0;
+                // Loop over the cell and its neighbors
+                for (int i = -1; i <= 1; i++)
+                {
+                    for (int j = -1; j <= 1; j++)
+                    {
+                        sum += map[x + i, y + j];
+                    }
+                }
+                blurredMap[x, y] = sum / 9; // There are 9 cells (3x3) being averaged
+            }
+        }
+
+        // Copy edges from original map to blurred map, since we didn't process them
+        for (int x = 0; x < width; x++)
+        {
+            blurredMap[x, 0] = map[x, 0];
+            blurredMap[x, height - 1] = map[x, height - 1];
+        }
+
+        for (int y = 0; y < height; y++)
+        {
+            blurredMap[0, y] = map[0, y];
+            blurredMap[width - 1, y] = map[width - 1, y];
+        }
+
+        return blurredMap;
+    }
+    int[,] AdjustIsolatedTiles(int[,] map)
+    {
+        int width = map.GetLength(0);
+        int height = map.GetLength(1);
+         // tweak this value as needed
+
+        for (int x = 0; x < width; x++)
+        {
+            for (int y = 0; y < height; y++)
+            {
+                if (map[x, y] == 0) // land tile
+                {
+                    int distance = DistanceToNearestTile(new Vector2Int(x, y), 1, map); // distance to nearest water tile
+                    if (distance > maxDistanceForIsolatedLand)
+                    {
+                        map[x, y] = 1; // Convert this land to water as it's too isolated
+                    }
+                }
+            }
+        }
+
+        return map;
+    }
+
 }
