@@ -45,6 +45,7 @@ public class MapGeneratorAlgorithms : MapGeneratorHelper
 
         return newMap;
     }
+    #region Cellular Automata Smoothing
     public int[,] SmoothMap(Vector2Int size, int[,] map)
     {
         for (int x = 0; x < size.x; x++)
@@ -90,26 +91,9 @@ public class MapGeneratorAlgorithms : MapGeneratorHelper
         }
         return map;
     }
-    public int GetNeighbourCountInRegion(int x, int y, int[,] map, TileType targetType, List<Vector2Int> region)
-    {
-        int count = 0;
+    #endregion
 
-        int[] dirX = { -1, 0, 1, 0 };
-        int[] dirY = { 0, -1, 0, 1 };
-
-        for (int i = 0; i < 4; i++)
-        {
-            int neighbourX = x + dirX[i];
-            int neighbourY = y + dirY[i];
-            Vector2Int neighbourTile = new Vector2Int(neighbourX, neighbourY);
-
-            if (region.Contains(neighbourTile) && map[neighbourX, neighbourY] == (int)targetType)
-            {
-                count++;
-            }
-        }
-        return count;
-    }
+    #region FloodFill Region Detection
     public List<List<Vector2Int>> GetRegions(int tileType, int[,] map)
     {
         List<List<Vector2Int>> regions = new List<List<Vector2Int>>();
@@ -233,6 +217,7 @@ public class MapGeneratorAlgorithms : MapGeneratorHelper
         }
         return subRegions;
     }
+    
     public int[,] ProcessMap(int[,] map, TileType tileType, int threshold)
     {
         List<List<Vector2Int>> regions = GetRegions((int)tileType, map);
@@ -249,6 +234,9 @@ public class MapGeneratorAlgorithms : MapGeneratorHelper
         }
         return map;
     }
+    #endregion
+
+    #region Populate Map
     public int[,] PopulateGrassWithFlowers(List<Vector2Int> region, int[,] map)
     {
         if (grassTypes.Contains((TileType)map[region[0].x, region[0].y]))
@@ -421,6 +409,6 @@ public class MapGeneratorAlgorithms : MapGeneratorHelper
         return map;
     }
 
-
+    #endregion
 
 }

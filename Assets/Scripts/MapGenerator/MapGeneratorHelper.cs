@@ -38,6 +38,26 @@ public class MapGeneratorHelper : MonoBehaviour
         }
         return count;
     }
+    public int GetNeighbourCountInRegion(int x, int y, int[,] map, TileType targetType, List<Vector2Int> region)
+    {
+        int count = 0;
+
+        int[] dirX = { -1, 0, 1, 0 };
+        int[] dirY = { 0, -1, 0, 1 };
+
+        for (int i = 0; i < 4; i++)
+        {
+            int neighbourX = x + dirX[i];
+            int neighbourY = y + dirY[i];
+            Vector2Int neighbourTile = new Vector2Int(neighbourX, neighbourY);
+
+            if (region.Contains(neighbourTile) && map[neighbourX, neighbourY] == (int)targetType)
+            {
+                count++;
+            }
+        }
+        return count;
+    }
     public bool IsInMapRange(int x, int y, Vector2Int size)
     {
         return x >= 0 && x < size.x && y >= 0 && y < size.y;

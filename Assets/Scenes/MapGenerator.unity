@@ -152,35 +152,51 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 027c30fee64bd6647b4c7de1d00a1957, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  tiles: []
-  tilemapGround: {fileID: 605657242}
-  tilemapTop: {fileID: 889372117}
-  islandTile: {fileID: 11400000, guid: b6405c6ad96080740ab129de11057852, type: 2}
-  waterTile: {fileID: 11400000, guid: e73de060c18651349929457800694585, type: 2}
-  sandTile: {fileID: 11400000, guid: fdbbaa041ec10fd4681161775384e9fa, type: 2}
-  shallowWater: {fileID: 11400000, guid: 03838354fe7d819449411836e0b6b727, type: 2}
-  lowWater: {fileID: 11400000, guid: 77b6689c3f806684d88150975f0bf2b9, type: 2}
-  mediumWater: {fileID: 11400000, guid: e73de060c18651349929457800694585, type: 2}
-  deepWater: {fileID: 11400000, guid: 38a46dfeda0fcfe448978e7be6200ff4, type: 2}
-  smallGrass: {fileID: 11400000, guid: a2d8f07158fa4494eae790dd189302a3, type: 2}
-  mediumGrass: {fileID: 11400000, guid: 44ff512ca3cd30042842b08fa7f92625, type: 2}
-  bigGrass: {fileID: 11400000, guid: 8736a2aac08062f49afcab3ada099f35, type: 2}
-  smallFlowerRed: {fileID: 11400000, guid: d6c61b36419637748a9498917c49553e, type: 2}
-  smallFlowerYellow: {fileID: 11400000, guid: 19de644275bff4d47937930f135e73df, type: 2}
-  mediumFlowerRed: {fileID: 11400000, guid: acbb95fc9d219104f963e15a9f5d48c2, type: 2}
-  mediumFlowerYellow: {fileID: 11400000, guid: 663243415f9a72a428fd856b9d00784c, type: 2}
   grassTypes: 030000000500000006000000
   flowerTypes: 0700000008000000090000000a000000
   waterTypes: 
-  gridSize: {x: 4, y: 4}
-  chunkSize: {x: 76, y: 76}
+  gridSize: {x: 6, y: 6}
+  chunkSize: {x: 25, y: 25}
   useRandom: 1
   seed: atzensport
-  waterFillPercent: 53
-  maxDistanceForIsolatedLand: 50
+  waterFillPercent: 52
   flowerFillPercent: 30
+  grassChance: 13
+  maxDistanceForIsolatedLand: 100
+  tiles:
+  - Type: 0
+    tile: {fileID: 11400000, guid: b6405c6ad96080740ab129de11057852, type: 2}
+  - Type: 1
+    tile: {fileID: 11400000, guid: e73de060c18651349929457800694585, type: 2}
+  - Type: 2
+    tile: {fileID: 11400000, guid: 70813307a5f4ac74384b7084c41fc8f3, type: 2}
+  - Type: 3
+    tile: {fileID: 11400000, guid: 86444bba750895d429d3088e31ab9d66, type: 2}
+  - Type: 5
+    tile: {fileID: 11400000, guid: e0135aacb0233e14baf68f96a6c1d2b6, type: 2}
+  - Type: 6
+    tile: {fileID: 11400000, guid: 57f197744c441794e923ab55f453d90a, type: 2}
+  - Type: 7
+    tile: {fileID: 11400000, guid: d6c61b36419637748a9498917c49553e, type: 2}
+  - Type: 8
+    tile: {fileID: 11400000, guid: 19de644275bff4d47937930f135e73df, type: 2}
+  - Type: 9
+    tile: {fileID: 11400000, guid: acbb95fc9d219104f963e15a9f5d48c2, type: 2}
+  - Type: 10
+    tile: {fileID: 11400000, guid: 663243415f9a72a428fd856b9d00784c, type: 2}
+  - Type: 11
+    tile: {fileID: 11400000, guid: 08d82ea2928d2f34c80afa3f551b6308, type: 2}
+  - Type: 12
+    tile: {fileID: 11400000, guid: 77b6689c3f806684d88150975f0bf2b9, type: 2}
+  - Type: 13
+    tile: {fileID: 11400000, guid: e73de060c18651349929457800694585, type: 2}
+  - Type: 14
+    tile: {fileID: 11400000, guid: 38a46dfeda0fcfe448978e7be6200ff4, type: 2}
+  tilemapGround: {fileID: 605657242}
+  tilemapTop: {fileID: 889372117}
   smoothIterations: 3
-  standardDeviation: 0.1
+  standardDeviation: 0.9
+  proccessThreshhold: 10
 --- !u!4 &262387338
 Transform:
   m_ObjectHideFlags: 0
