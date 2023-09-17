@@ -6,10 +6,6 @@ using UnityEngine;
 
 public class MapGeneratorAlgorithms : MapGeneratorHelper
 {
-
-
-
-
     public bool useRandom;
     public string seed;
     public float waterFillPercent = 50;
@@ -42,7 +38,6 @@ public class MapGeneratorAlgorithms : MapGeneratorHelper
                 }
             }
         }
-
         return newMap;
     }
     #region Cellular Automata Smoothing
@@ -430,10 +425,7 @@ public class MapGeneratorAlgorithms : MapGeneratorHelper
                 }
             }
         }
-
         return map;
     }
-
     #endregion
-
 }

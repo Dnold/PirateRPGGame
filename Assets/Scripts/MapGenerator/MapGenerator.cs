@@ -49,12 +49,7 @@ public class MapGenerator : MapGeneratorAlgorithms
         }
         int[,] fullmap = ConcatenateChunks(chunks);
         int[,] newmap = SetOceanDepth(fullmap);
-
-
         newmap = BlurOceanDepthWithNoise(newmap, 40f, 10);
-
-
-
         chunks = DivideIntoChunks(newmap, chunkSize, chunks);
 
         // Load the generated chunks into the tilemap.
@@ -80,11 +75,7 @@ public class MapGenerator : MapGeneratorAlgorithms
         newmap = SetGrassInRegions(regions, newmap);
         newmap = Sandbanks(regions, newmap);
 
-
         chunks[x, y] = new Chunk(pos, size, newmap, regions);
-
-
-
     }
 
     void LoadInTiles()
@@ -119,8 +110,6 @@ public class MapGenerator : MapGeneratorAlgorithms
                     continue;
                 }
                 tilemapGround.SetTile(position, tiles.FirstOrDefault(e => (int)e.Type == value).tile);
-
-
             }
         }
     }
@@ -177,10 +166,6 @@ public class MapGenerator : MapGeneratorAlgorithms
             }
 
         }
-
-
-
-
     }
 }
 
