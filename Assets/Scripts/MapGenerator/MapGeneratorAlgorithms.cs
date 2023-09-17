@@ -229,7 +229,7 @@ public class MapGeneratorAlgorithms : MapGeneratorHelper
 
     public int[,] ProcessMap(int[,] map, TileType tileType, int threshold)
     {
-        List<List<Vector2Int>> regions = GetRegions(map,tileType);
+        List<List<Vector2Int>> regions = GetRegions(map, tileType);
 
         foreach (var region in regions)
         {
@@ -356,7 +356,7 @@ public class MapGeneratorAlgorithms : MapGeneratorHelper
         }
         return fullMap;
     }
-    public int[,] BlurOceanDepth(int[,] map)
+    public int[,] BlurOceanDepthWithNoise(int[,] map, float noiseScale, float noiseThreshold)
     {
         int width = map.GetLength(0);
         int height = map.GetLength(1);
@@ -366,20 +366,34 @@ public class MapGeneratorAlgorithms : MapGeneratorHelper
         {
             for (int y = 1; y < height - 1; y++)
             {
-                int sum = 0;
-                // Loop over the cell and its neighbors
-                for (int i = -1; i <= 1; i++)
+                // 1. Scale and Translate the Coordinates:
+                float noiseValue = Mathf.PerlinNoise(x * noiseScale, y * noiseScale);
+
+                // 2. Introduce the Noise to the Blur Function:
+                if (noiseValue > noiseThreshold)
                 {
-                    for (int j = -1; j <= 1; j++)
+                    // If noise value is above the threshold, compute average blur for this tile.
+                    int sum = 0;
+
+                    for (int i = -1; i <= 1; i++)
                     {
-                        sum += map[x + i, y + j];
+                        for (int j = -1; j <= 1; j++)
+                        {
+                            sum += map[x + i, y + j];
+                        }
                     }
+
+                    blurredMap[x, y] = sum / 9; // Average over the 3x3 cells.
                 }
-                blurredMap[x, y] = sum / 9; // There are 9 cells (3x3) being averaged
+                else
+                {
+                    // If noise value is below the threshold, keep the original tile value.
+                    blurredMap[x, y] = map[x, y];
+                }
             }
         }
 
-        // Copy edges from original map to blurred map, since we didn't process them
+        // Copy edges from original map to blurred map, since we didn't process them.
         for (int x = 0; x < width; x++)
         {
             blurredMap[x, 0] = map[x, 0];
@@ -394,6 +408,8 @@ public class MapGeneratorAlgorithms : MapGeneratorHelper
 
         return blurredMap;
     }
+
+
     public int[,] AdjustIsolatedTiles(int[,] map)
     {
         int width = map.GetLength(0);

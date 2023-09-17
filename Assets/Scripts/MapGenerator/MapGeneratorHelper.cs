@@ -135,7 +135,7 @@ public class MapGeneratorHelper : MonoBehaviour
             }
         }
 
-        return chunks;
+        return chunkse;
     }
 
     public int DistanceToNearestTile(Vector2Int start, int targetTileType, int[,] map)
