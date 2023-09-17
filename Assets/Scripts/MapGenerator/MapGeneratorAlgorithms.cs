@@ -166,43 +166,7 @@ public class MapGeneratorAlgorithms : MapGeneratorHelper
         return tiles;
     }
 
-    public List<Vector2Int> GetRegionTilesOfType(int startX, int startY, int[,] map, TileType targetTileType)
-    {
-        List<Vector2Int> tiles = new List<Vector2Int>();
-        int[,] mapFlags = new int[map.GetLength(0), map.GetLength(1)];
-        int tileType = map[startX, startY];
 
-        if (tileType != (int)targetTileType)
-            return tiles;  // Return an empty list if the tile type does not match the target tile type
-
-        Queue<Vector2Int> queue = new Queue<Vector2Int>();
-        queue.Enqueue(new Vector2Int(startX, startY));
-        mapFlags[startX, startY] = 1;
-
-        int[] dirX = { 0, 0, 1, -1 };
-        int[] dirY = { 1, -1, 0, 0 };
-
-        while (queue.Count > 0)
-        {
-            Vector2Int tile = queue.Dequeue();
-            tiles.Add(tile);
-
-            for (int i = 0; i < 4; i++)
-            {
-                int neighbourX = tile.x + dirX[i];
-                int neighbourY = tile.y + dirY[i];
-
-                Vector2Int neighbour = new Vector2Int(neighbourX, neighbourY);
-
-                if (IsInMapRange(neighbourX, neighbourY, chunkSize) && mapFlags[neighbourX, neighbourY] == 0 && map[neighbourX, neighbourY] == tileType)
-                {
-                    mapFlags[neighbourX, neighbourY] = 1;
-                    queue.Enqueue(neighbour);
-                }
-            }
-        }
-        return tiles;
-    }
     public List<List<Vector2Int>> FindAllSubRegionsInLargerRegion(List<Vector2Int> largerRegion, int[,] map, TileType targetTileType)
     {
         // To keep track of tiles that have been processed
@@ -214,7 +178,7 @@ public class MapGeneratorAlgorithms : MapGeneratorHelper
         {
             if (!processedTiles.Contains(tile) && map[tile.x, tile.y] == (int)targetTileType)
             {
-                List<Vector2Int> subRegion = GetRegionTilesOfType(tile.x, tile.y, map, targetTileType);
+                List<Vector2Int> subRegion = GetRegionTiles(tile.x, tile.y, map, targetTileType);
 
                 subRegions.Add(subRegion);
 

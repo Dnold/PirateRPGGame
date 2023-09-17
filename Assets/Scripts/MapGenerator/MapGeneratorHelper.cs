@@ -203,6 +203,10 @@ public class MapGeneratorHelper : MonoBehaviour
         }
         return false;
     }
+    public Vector3Int GetTileGlobalPosition(Vector2Int chunkPos, Vector2Int gridPos)
+    {
+       return new Vector3Int(chunkPos.x * chunkSize.x + gridPos.x, chunkPos.y * chunkSize.y + gridPos.y, 0);
+    }
 
 
 }
