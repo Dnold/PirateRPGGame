@@ -53,7 +53,7 @@ public class MapGenerator : MapGeneratorAlgorithms
 
         }
 
-        chunks = DivideIntoChunks(fullmap, chunkSize);
+        chunks = DivideIntoChunks(fullmap, chunkSize,chunks);
 
         // Load the generated chunks into the tilemap.
         LoadInTiles();
@@ -71,15 +71,16 @@ public class MapGenerator : MapGeneratorAlgorithms
         {
             newmap = SmoothMap(size, newmap);
         }
-        
+
         newmap = AdjustIsolatedTiles(newmap);
         newmap = ProcessMap(newmap, TileType.Island, proccessThreshhold);
-        List<List<Vector2Int>> regions = GetRegions((int)TileType.Island, newmap);
+        List<List<Vector2Int>> regions = GetRegions(newmap,islandTiles);
         newmap = SetGrassInRegions(regions, newmap);
         newmap = Sandbanks(regions, newmap);
 
 
-        chunks[x, y] = new Chunk(pos, size, newmap);
+        chunks[x, y] = new Chunk(pos, size, newmap,regions);
+       
 
 
     }
@@ -119,14 +120,63 @@ public class MapGenerator : MapGeneratorAlgorithms
             }
         }
     }
-   
-    
-  
-    
 
-    
-   
-   
+    private void OnDrawGizmos()
+    {
+        // Loop through all chunks.
+        for (int chunkX = 0; chunkX < gridSize.x; chunkX++)
+        {
+            for (int chunkY = 0; chunkY < gridSize.y; chunkY++)
+            {
+                // Get the starting position of the current chunk.
+                Vector3 startPosition = new Vector3(chunkX * chunkSize.x, chunkY * chunkSize.y, 0);
+
+                // Calculate the four corners of the chunk.
+                Vector3 topLeft = startPosition;
+                Vector3 topRight = startPosition + new Vector3(chunkSize.x, 0, 0);
+                Vector3 bottomRight = startPosition + new Vector3(chunkSize.x, chunkSize.y, 0);
+                Vector3 bottomLeft = startPosition + new Vector3(0, chunkSize.y, 0);
+
+                // Draw the borders using Gizmos.
+                Gizmos.color = UnityEngine.Color.red;  // Setting the color to red for visualization.
+
+                Gizmos.DrawLine(topLeft, topRight);
+                Gizmos.DrawLine(topRight, bottomRight);
+                Gizmos.DrawLine(bottomRight, bottomLeft);
+                Gizmos.DrawLine(bottomLeft, topLeft);
+            }
+        }
+
+        for (int chunkX = 0; chunkX < gridSize.x; chunkX++)
+        {
+            for (int chunkY = 0; chunkY < gridSize.y; chunkY++)
+            {
+                Chunk currentChunk = chunks[chunkX, chunkY];
+                foreach (var region in currentChunk.regions)
+                {
+                    foreach (var tile in region)
+                    {
+                        if (IsBoundaryTile(tile, currentChunk.map, islandTiles))
+                        {
+                            // Convert tile position to world position
+                            Vector3 worldPos = new Vector3(chunkX * chunkSize.x + tile.x + 0.5f,
+                                                           chunkY * chunkSize.y + tile.y + 0.5f,
+                                                           0);
+                            Gizmos.color = UnityEngine.Color.blue;  // Setting the color to blue for region borders.
+                            Gizmos.DrawCube(worldPos, Vector3.one * 0.5f);
+                        }
+                    }
+                }
+            }
+        }
+
+
+
+
+
+
+    }
 }
+
 
 

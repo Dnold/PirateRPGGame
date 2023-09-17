@@ -1,14 +1,17 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 public class MapGeneratorHelper : MonoBehaviour
 {
     [SerializeField]
+    public Vector2Int gridSize;
+    public Vector2Int chunkSize;
 
     public TileType[] grassTypes = { (TileType)3, (TileType)5, (TileType)6 };
     public TileType[] flowerTypes;
-    public TileType[] waterTypes;
+    public TileType[] islandTiles;
     public bool IsBorder(int x, int y, Vector2Int size)
     {
         return x == 0 || y == 0 || x == size.x - 1 || y == size.y - 1;
@@ -106,13 +109,13 @@ public class MapGeneratorHelper : MonoBehaviour
 
         return fullMap;
     }
-    public Chunk[,] DivideIntoChunks(int[,] fullMap, Vector2Int chunkSize)
+    public Chunk[,] DivideIntoChunks(int[,] fullMap, Vector2Int chunkSize, Chunk[,] chunks)
     {
         int width = fullMap.GetLength(0);
         int height = fullMap.GetLength(1);
         int numChunksX = width / chunkSize.x;
         int numChunksY = height / chunkSize.y;
-        Chunk[,] chunks = new Chunk[numChunksX, numChunksY];
+        Chunk[,] chunkse = new Chunk[numChunksX, numChunksY];
 
         for (int cx = 0; cx < numChunksX; cx++)
         {
@@ -127,7 +130,8 @@ public class MapGeneratorHelper : MonoBehaviour
                         chunkMap[x, y] = fullMap[cx * chunkSize.x + x, cy * chunkSize.y + y];
                     }
                 }
-                chunks[cx, cy] = new Chunk(chunkCenter, chunkSize, chunkMap);
+                chunkse[cx, cy] = new Chunk(chunkCenter, chunkSize, chunkMap, chunks[cx,cy].regions);
+                
             }
         }
 
@@ -178,4 +182,27 @@ public class MapGeneratorHelper : MonoBehaviour
 
         return -1;  // Return -1 if no target tile is found
     }
+    public bool IsBoundaryTile(Vector2Int tile, int[,] map, params TileType[] tileTypes)
+    {
+        int[] dirX = { 0, 0, 1, -1 };
+        int[] dirY = { 1, -1, 0, 0 };
+
+        for (int i = 0; i < 4; i++)
+        {
+            int neighbourX = tile.x + dirX[i];
+            int neighbourY = tile.y + dirY[i];
+
+            // If out of range, continue to next iteration
+            if (!IsInMapRange(neighbourX, neighbourY, chunkSize))
+                continue;
+
+            if (!tileTypes.Contains((TileType)map[neighbourX, neighbourY]))
+            {
+                return true;  // This tile has a neighbor of a different type, so it's a boundary tile.
+            }
+        }
+        return false;
+    }
+
+
 }

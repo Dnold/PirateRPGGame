@@ -1,13 +1,13 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.InteropServices;
 using UnityEngine;
 
 public class MapGeneratorAlgorithms : MapGeneratorHelper
 {
 
-    public Vector2Int gridSize;
-    public Vector2Int chunkSize;
+
 
 
     public bool useRandom;
@@ -94,7 +94,7 @@ public class MapGeneratorAlgorithms : MapGeneratorHelper
     #endregion
 
     #region FloodFill Region Detection
-    public List<List<Vector2Int>> GetRegions(int tileType, int[,] map)
+    public List<List<Vector2Int>> GetRegions(int[,] map, params TileType[] tileTypes)
     {
         List<List<Vector2Int>> regions = new List<List<Vector2Int>>();
         int[,] mapFlags = new int[chunkSize.x, chunkSize.y];
@@ -102,9 +102,9 @@ public class MapGeneratorAlgorithms : MapGeneratorHelper
         {
             for (int y = 0; y < chunkSize.y; y++)
             {
-                if (mapFlags[x, y] == 0 && map[x, y] == tileType)
+                if (mapFlags[x, y] == 0 && tileTypes.Contains((TileType)map[x, y]))
                 {
-                    List<Vector2Int> newRegion = GetRegionTiles(x, y, map);
+                    List<Vector2Int> newRegion = GetRegionTiles(x, y, map, tileTypes);
                     regions.Add(newRegion);
                     foreach (Vector2Int tile in newRegion)
                     {
@@ -115,11 +115,18 @@ public class MapGeneratorAlgorithms : MapGeneratorHelper
         }
         return regions;
     }
-    public List<Vector2Int> GetRegionTiles(int startX, int startY, int[,] map)
+
+    public List<Vector2Int> GetRegionTiles(int startX, int startY, int[,] map, params TileType[] treatedAsSameTypes)
     {
         List<Vector2Int> tiles = new List<Vector2Int>();
         int[,] mapFlags = new int[chunkSize.x, chunkSize.y];
         TileType currentTileType = (TileType)map[startX, startY];
+
+        // If no specific types are provided, use only the current tile type.
+        if (treatedAsSameTypes.Length == 0)
+        {
+            treatedAsSameTypes = new TileType[] { currentTileType };
+        }
 
         Queue<Vector2Int> queue = new Queue<Vector2Int>();
         queue.Enqueue(new Vector2Int(startX, startY));
@@ -141,13 +148,14 @@ public class MapGeneratorAlgorithms : MapGeneratorHelper
                 if (IsInMapRange(neighbourX, neighbourY, chunkSize) && mapFlags[neighbourX, neighbourY] == 0)
                 {
                     // If flood-filling a water region we encounter Sand or Grass,treat them as barriers/boundaries
-                    if (currentTileType == TileType.Water &&
+                    if (!treatedAsSameTypes.Contains(currentTileType) && currentTileType == TileType.Water &&
                        (map[neighbourX, neighbourY] == (int)TileType.Sand))
                     {
                         continue;
                     }
 
-                    if (map[neighbourX, neighbourY] == (int)currentTileType)
+                    // If the neighboring tile is one of the types we're treating as the same, explore it.
+                    if (treatedAsSameTypes.Contains((TileType)map[neighbourX, neighbourY]))
                     {
                         mapFlags[neighbourX, neighbourY] = 1;
                         queue.Enqueue(new Vector2Int(neighbourX, neighbourY));
@@ -157,6 +165,7 @@ public class MapGeneratorAlgorithms : MapGeneratorHelper
         }
         return tiles;
     }
+
     public List<Vector2Int> GetRegionTilesOfType(int startX, int startY, int[,] map, TileType targetTileType)
     {
         List<Vector2Int> tiles = new List<Vector2Int>();
@@ -217,10 +226,10 @@ public class MapGeneratorAlgorithms : MapGeneratorHelper
         }
         return subRegions;
     }
-    
+
     public int[,] ProcessMap(int[,] map, TileType tileType, int threshold)
     {
-        List<List<Vector2Int>> regions = GetRegions((int)tileType, map);
+        List<List<Vector2Int>> regions = GetRegions(map,tileType);
 
         foreach (var region in regions)
         {
