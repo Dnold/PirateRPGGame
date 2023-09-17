@@ -12,8 +12,6 @@ using static MapGenerator;
 
 public class MapGenerator : MapGeneratorAlgorithms
 {
-    bool mapIsLoaded = false;
-
     [SerializeField]
     public TileValue[] tiles;
     public Tilemap tilemapGround;
@@ -36,8 +34,6 @@ public class MapGenerator : MapGeneratorAlgorithms
 
     public void GenerateChunks()
     {
-        mapIsLoaded = false;
-        chunks = new Chunk[0, 0];
         // Initialize the chunks array.
         chunks = new Chunk[gridSize.x, gridSize.y];
 
@@ -57,7 +53,7 @@ public class MapGenerator : MapGeneratorAlgorithms
 
         }
 
-        chunks = DivideIntoChunks(fullmap, chunkSize, chunks);
+        chunks = DivideIntoChunks(fullmap, chunkSize,chunks);
 
         // Load the generated chunks into the tilemap.
         LoadInTiles();
@@ -78,20 +74,19 @@ public class MapGenerator : MapGeneratorAlgorithms
 
         newmap = AdjustIsolatedTiles(newmap);
         newmap = ProcessMap(newmap, TileType.Island, proccessThreshhold);
-        List<List<Vector2Int>> regions = GetRegions(newmap, islandTiles);
+        List<List<Vector2Int>> regions = GetRegions(newmap,islandTiles);
         newmap = SetGrassInRegions(regions, newmap);
         newmap = Sandbanks(regions, newmap);
 
 
-        chunks[x, y] = new Chunk(pos, size, newmap, regions);
-
+        chunks[x, y] = new Chunk(pos, size, newmap,regions);
+       
 
 
     }
 
     void LoadInTiles()
     {
-        tilemapGround.ClearAllTiles();
         for (int chunkX = 0; chunkX < gridSize.x; chunkX++)
         {
             for (int chunkY = 0; chunkY < gridSize.y; chunkY++)
@@ -99,18 +94,16 @@ public class MapGenerator : MapGeneratorAlgorithms
                 LoadChunkTiles(chunkX, chunkY);
             }
         }
-        mapIsLoaded = true;
     }
 
     void LoadChunkTiles(int chunkX, int chunkY)
     {
-
         for (int x = 0; x < chunkSize.x; x++)
         {
             for (int y = 0; y < chunkSize.y; y++)
             {
                 // Calculate the global position of the tile.
-                Vector3Int position = GetTileGlobalPosition(new Vector2Int(chunkX, chunkY),new Vector2Int(x,y));
+                Vector3Int position = new Vector3Int(chunkX * chunkSize.x + x, chunkY * chunkSize.y + y, 0);
 
                 // Get the tile type from the chunk's map and set the appropriate tile.
                 int value = chunks[chunkX, chunkY].map[x, y];
@@ -153,26 +146,24 @@ public class MapGenerator : MapGeneratorAlgorithms
                 Gizmos.DrawLine(bottomLeft, topLeft);
             }
         }
-        if (mapIsLoaded)
+
+        for (int chunkX = 0; chunkX < gridSize.x; chunkX++)
         {
-            for (int chunkX = 0; chunkX < gridSize.x; chunkX++)
+            for (int chunkY = 0; chunkY < gridSize.y; chunkY++)
             {
-                for (int chunkY = 0; chunkY < gridSize.y; chunkY++)
+                Chunk currentChunk = chunks[chunkX, chunkY];
+                foreach (var region in currentChunk.regions)
                 {
-                    Chunk currentChunk = chunks[chunkX, chunkY];
-                    foreach (var region in currentChunk.regions)
+                    foreach (var tile in region)
                     {
-                        foreach (var tile in region)
+                        if (IsBoundaryTile(tile, currentChunk.map, islandTiles))
                         {
-                            if (IsBoundaryTile(tile, currentChunk.map, islandTiles))
-                            {
-                                // Convert tile position to world position
-                                Vector3 worldPos = new Vector3(chunkX * chunkSize.x + tile.x + 0.5f,
-                                                               chunkY * chunkSize.y + tile.y + 0.5f,
-                                                               0);
-                                Gizmos.color = UnityEngine.Color.blue;  // Setting the color to blue for region borders.
-                                Gizmos.DrawCube(worldPos, Vector3.one * 0.5f);
-                            }
+                            // Convert tile position to world position
+                            Vector3 worldPos = new Vector3(chunkX * chunkSize.x + tile.x + 0.5f,
+                                                           chunkY * chunkSize.y + tile.y + 0.5f,
+                                                           0);
+                            Gizmos.color = UnityEngine.Color.blue;  // Setting the color to blue for region borders.
+                            Gizmos.DrawCube(worldPos, Vector3.one * 0.5f);
                         }
                     }
                 }
