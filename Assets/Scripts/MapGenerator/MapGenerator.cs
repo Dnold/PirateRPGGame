@@ -1,33 +1,47 @@
 using JetBrains.Annotations;
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Drawing;
 using System.Linq;
 using Unity.VisualScripting;
+using UnityEditor;
 using UnityEngine;
 using UnityEngine.Tilemaps;
-using static MapGenerator;
-
-
 
 public class MapGenerator : MapGeneratorAlgorithms
 {
     bool mapIsLoaded = false;
+    Chunk[,] chunks = new Chunk[0, 0];
 
+    List<List<Vector2Int>> allRegions = new List<List<Vector2Int>>();
+    int[,] fullmap;
+
+    [Header("Advanced Settings")]
+
+    [Tooltip("Steps in Cellular Automata")]
+    public int smoothIterations = 3;
+    
+    [Header("Tilemap")]
     [SerializeField]
     public TileValue[] tiles;
     public Tilemap tilemapGround;
     public Tilemap tilemapTop;
 
-    public Chunk[,] chunks = new Chunk[0, 0];
+    [Header("TileGroups")]
+    public TileType[] grassTypes = { (TileType)3, (TileType)5, (TileType)6 };
+    public TileType[] flowerTypes;
+    public TileType[] islandTiles;
 
-    public int smoothIterations = 3;
-    public float standardDeviation = 0.15f;  // Adjust as needed. It controls the spread of the distribution.
-    public int proccessThreshhold = 25;
+    
+
 
     void Start()
     {
         GenerateChunks();
+        placeCam.pos = new Vector2Int((gridSize.x * chunkSize.x) / 2, (gridSize.y * chunkSize.y)/2+30);
+        placeCam.GetComponent<Camera>().orthographicSize = (chunkSize.y * gridSize.y)/2+30;
+        mapIsLoaded = true;
     }
 
     /// <summary>
@@ -36,6 +50,8 @@ public class MapGenerator : MapGeneratorAlgorithms
 
     public void GenerateChunks()
     {
+        Stopwatch sw = new Stopwatch();
+        sw.Start();
         mapIsLoaded = false;
         // Initialize the chunks array.
         chunks = new Chunk[gridSize.x, gridSize.y];
@@ -47,13 +63,24 @@ public class MapGenerator : MapGeneratorAlgorithms
                 CreateChunkAtPosition(x, y);
             }
         }
-        int[,] fullmap = ConcatenateChunks(chunks);
-        int[,] newmap = SetOceanDepth(fullmap);
-        newmap = BlurOceanDepthWithNoise(newmap, 40f, 10);
+        int[,] newmap = ConcatenateChunks(chunks);
+        newmap = SetOceanDepth(newmap);
+        allRegions = GetRegions(newmap, new Vector2Int(gridSize.x * chunkSize.x,gridSize.y * chunkSize.y),islandTiles);
+        fullmap = newmap;
+        //for (int i = 0; i < 2; i++)
+        //{
+        //    newmap = BlurOceanDepthWithNoise(newmap, noiseScale, noiseThreshold);
+        //}
         chunks = DivideIntoChunks(newmap, chunkSize, chunks);
 
+       
         // Load the generated chunks into the tilemap.
         LoadInTiles();
+        sw.Stop();
+        elapsedMsText.text = sw.ElapsedMilliseconds + " ms\n" + "ChunkSize: " + chunkSize.x+"X"+chunkSize.y+"\n"+"GridSize: "+gridSize.x+"X"+gridSize.y;
+        statsText.text = "waterfill: " + waterFillPercent+"\n"+"islandSizeThreshold: " + proccessThreshhold;
+            
+        UnityEngine.Debug.Log(sw.ElapsedMilliseconds + "ms");
     }
 
     void CreateChunkAtPosition(int x, int y)
@@ -69,10 +96,10 @@ public class MapGenerator : MapGeneratorAlgorithms
             newmap = SmoothMap(size, newmap);
         }
 
-        newmap = AdjustIsolatedTiles(newmap);
+
         newmap = ProcessMap(newmap, TileType.Island, proccessThreshhold);
-        List<List<Vector2Int>> regions = GetRegions(newmap, islandTiles);
-        newmap = SetGrassInRegions(regions, newmap);
+        List<List<Vector2Int>> regions = GetRegions(newmap, chunkSize, islandTiles);
+        newmap = SetGrassInRegions(regions, newmap,flowerTypes, grassTypes);
         newmap = Sandbanks(regions, newmap);
 
         chunks[x, y] = new Chunk(pos, size, newmap, regions);
@@ -81,6 +108,7 @@ public class MapGenerator : MapGeneratorAlgorithms
     void LoadInTiles()
     {
         tilemapGround.ClearAllTiles();
+        tilemapTop.ClearAllTiles();
         for (int chunkX = 0; chunkX < gridSize.x; chunkX++)
         {
             for (int chunkY = 0; chunkY < gridSize.y; chunkY++)
@@ -105,11 +133,20 @@ public class MapGenerator : MapGeneratorAlgorithms
 
                 if (flowerTypes.Contains((TileType)value))
                 {
-                    tilemapTop.SetTile(position, tiles.FirstOrDefault(e => (int)e.Type == value).tile);
+
                     tilemapGround.SetTile(position, tiles[0].tile);
                     continue;
                 }
                 tilemapGround.SetTile(position, tiles.FirstOrDefault(e => (int)e.Type == value).tile);
+                foreach(var region in chunks[chunkX, chunkY].regions)
+                {
+                    foreach(var tile in region)
+                    {
+                        position = new Vector3Int(chunkX * chunkSize.x + tile.x, chunkY * chunkSize.y + tile.y, 0);
+                        tilemapTop.SetTile(position, tiles[4].tile);
+                    }
+                }
+               
             }
         }
     }
@@ -142,20 +179,16 @@ public class MapGenerator : MapGeneratorAlgorithms
 
         if (mapIsLoaded)
         {
-            for (int chunkX = 0; chunkX < gridSize.x; chunkX++)
-            {
-                for (int chunkY = 0; chunkY < gridSize.y; chunkY++)
-                {
-                    Chunk currentChunk = chunks[chunkX, chunkY];
-                    foreach (var region in currentChunk.regions)
+        
+            foreach (var region in allRegions)
                     {
                         foreach (var tile in region)
                         {
-                            if (IsBoundaryTile(tile, currentChunk.map, islandTiles))
+                            if (IsBoundaryTile(tile, fullmap, new Vector2Int(chunkSize.x * gridSize.x,gridSize.y * chunkSize.y),islandTiles))
                             {
                                 // Convert tile position to world position
-                                Vector3 worldPos = new Vector3(chunkX * chunkSize.x + tile.x + 0.5f,
-                                                               chunkY * chunkSize.y + tile.y + 0.5f,
+                                Vector3 worldPos = new Vector3(tile.x + 0.5f,
+                                                               tile.y + 0.5f,
                                                                0);
                                 Gizmos.color = UnityEngine.Color.blue;  // Setting the color to blue for region borders.
                                 Gizmos.DrawCube(worldPos, Vector3.one * 0.5f);
@@ -166,8 +199,7 @@ public class MapGenerator : MapGeneratorAlgorithms
             }
 
         }
-    }
-}
+    
 
 
 

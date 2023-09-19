@@ -1,17 +1,26 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using TMPro;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class MapGeneratorHelper : MonoBehaviour
 {
+
     [SerializeField]
+    [Header("Dimensions")]
     public Vector2Int gridSize;
     public Vector2Int chunkSize;
-
-    public TileType[] grassTypes = { (TileType)3, (TileType)5, (TileType)6 };
-    public TileType[] flowerTypes;
-    public TileType[] islandTiles;
+    [Header("Settings")]
+    public float waterFillPercent = 50;
+    public int proccessThreshhold = 25;
+   
+    [Header("Benchmark")]
+    public TMP_Text elapsedMsText;
+    public TMP_Text statsText;
+    public placeCam placeCam;
     public bool IsBorder(int x, int y, Vector2Int size)
     {
         return x == 0 || y == 0 || x == size.x - 1 || y == size.y - 1;
@@ -138,51 +147,20 @@ public class MapGeneratorHelper : MonoBehaviour
         return chunkse;
     }
 
-    public int DistanceToNearestTile(Vector2Int start, int targetTileType, int[,] map)
+    public int GetDistanceToNearestIsland(Vector2Int position, List<Vector2Int> islandPositions)
     {
-        // Directions for left, right, up, down
-        Vector2Int[] directions =
+        int minDistance = Int32.MaxValue;
+        foreach (var islandPos in islandPositions)
         {
-        new Vector2Int(-1, 0),
-        new Vector2Int(1, 0),
-        new Vector2Int(0, -1),
-        new Vector2Int(0, 1)
-    };
-
-        int width = map.GetLength(0);
-        int height = map.GetLength(1);
-
-        bool[,] visited = new bool[width, height];
-        Queue<DataTile> queue = new Queue<DataTile>();
-        queue.Enqueue(new DataTile(start, 0));
-
-        while (queue.Count > 0)
-        {
-            DataTile currentTile = queue.Dequeue();
-
-            foreach (Vector2Int dir in directions)
+            int distance = Math.Abs(islandPos.x - position.x) + Math.Abs(islandPos.y - position.y);
+            if (distance < minDistance)
             {
-                Vector2Int nextPos = currentTile.Position + dir;
-
-                // Check if the tile is within map boundaries and hasn't been visited yet
-                if (nextPos.x >= 0 && nextPos.x < width && nextPos.y >= 0 && nextPos.y < height && !visited[nextPos.x, nextPos.y])
-                {
-                    visited[nextPos.x, nextPos.y] = true;
-
-                    // If the next tile matches the targetTileType, return its distance from the start
-                    if (map[nextPos.x, nextPos.y] == targetTileType)
-                    {
-                        return currentTile.Distance + 1;
-                    }
-
-                    queue.Enqueue(new DataTile(nextPos, currentTile.Distance + 1));
-                }
+                minDistance = distance;
             }
         }
-
-        return -1;  // Return -1 if no target tile is found
+        return minDistance;
     }
-    public bool IsBoundaryTile(Vector2Int tile, int[,] map, params TileType[] tileTypes)
+    public bool IsBoundaryTile(Vector2Int tile, int[,] map, Vector2Int size, params TileType[] tileTypes)
     {
         int[] dirX = { 0, 0, 1, -1 };
         int[] dirY = { 1, -1, 0, 0 };
@@ -193,7 +171,7 @@ public class MapGeneratorHelper : MonoBehaviour
             int neighbourY = tile.y + dirY[i];
 
             // If out of range, continue to next iteration
-            if (!IsInMapRange(neighbourX, neighbourY, chunkSize))
+            if (!IsInMapRange(neighbourX, neighbourY, size))
                 continue;
 
             if (!tileTypes.Contains((TileType)map[neighbourX, neighbourY]))

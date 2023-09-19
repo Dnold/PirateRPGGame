@@ -6,6 +6,8 @@ using UnityEngine.UIElements;
 
 public class PlayerShipController : MonoBehaviour
 {
+    public SpriteRenderer shipRenderer;
+    public Sprite[] rotationSprites;
     Vector2 windDirection = Vector2.zero;
     float windTurnTime = 10f;
     public Transform sailObject;
@@ -20,7 +22,9 @@ public class PlayerShipController : MonoBehaviour
     void Start()
     {
         StartCoroutine(RandomizeWindDir());
+        shipRenderer = GetComponent<SpriteRenderer>();
     }
+    private Vector2 currentDirection = Vector2.up;
     void Update()
     {
         //Draw Wind Dir
@@ -30,7 +34,7 @@ public class PlayerShipController : MonoBehaviour
 
         //Wer das anfässt ist ein Hurensohn
         //Draw Player Travel Dir
-        Debug.DrawRay(transform.position, transform.up * 5, Color.blue);
+        Debug.DrawRay(transform.position, currentDirection * 5, Color.blue);
         // Wenn W gedr�ckt wird, erh�he den Gang (aber nicht �ber den maximalen Wert).
         if (Input.GetKeyDown(KeyCode.W) && gearState < 3)
         {
@@ -46,59 +50,77 @@ public class PlayerShipController : MonoBehaviour
         // Setze die aktuelle Geschwindigkeit basierend auf dem Gang.
         currentSpeed = maxSpeed * gearSpeeds[gearState + 3]; // +3, um den Index im Bereich von 0 bis 6 zu halten.
 
-        // Bewege das Schiff basierend auf der aktuellen Geschwindigkeit.
-        transform.position += transform.up * currentSpeed * Time.deltaTime;
 
-        if (Input.GetKey(KeyCode.A))
-        {
-            transform.Rotate(Vector3.forward * rotationSpeed * Time.deltaTime);
-        }
 
-        if (Input.GetKey(KeyCode.D))
-        {
-            transform.Rotate(-Vector3.forward * rotationSpeed * Time.deltaTime);
-        }
-        if (Input.GetKey(KeyCode.Q))
-        {
-            sailObject.transform.Rotate(Vector3.forward * sailRotationSpeed * Time.deltaTime);
-        }
+        HandleDirectionChange();
 
-        // Wenn die E-Taste gedr�ckt wird, dreht das Segel nach rechts.
-        if (Input.GetKey(KeyCode.E))
-        {
-            sailObject.transform.Rotate(-Vector3.forward * sailRotationSpeed * Time.deltaTime, Space.World);
-        }
+ 
+        
+
+        transform.position += (Vector3)currentDirection * currentSpeed * Time.deltaTime;
+
+       
+        //if (Input.GetKey(KeyCode.Q))
+        //{
+        //    sailObject.transform.Rotate(Vector3.forward * sailRotationSpeed * Time.deltaTime);
+        //}
+
+        //// Wenn die E-Taste gedr�ckt wird, dreht das Segel nach rechts.
+        //if (Input.GetKey(KeyCode.E))
+        //{
+        //    sailObject.transform.Rotate(-Vector3.forward * sailRotationSpeed * Time.deltaTime, Space.World);
+        //}
 
         ApplySpeedBoost();
+        UpdateSpriteBasedOnRotation();
     }
     //Total Time wasted here: 2h
     //Increment the counter for each time you think you can redacted
     void ApplySpeedBoost()
     {
         float speedBoost = CalculateSpeedBoost(CheckWindAngleToSail());
-        float effectiveSpeed = baseSpeed + baseSpeed * speedBoost;
+        float effectiveSpeed = speedBoost;
+        if (speedBoost < 0)
+        {
+            effectiveSpeed = 1;
+        }
 
-        transform.position += transform.up * effectiveSpeed * Time.deltaTime;
+        transform.position += new Vector3(currentDirection.x,currentDirection.y) * (baseSpeed + effectiveSpeed) * Time.deltaTime;
 
+
+    }
+    void HandleDirectionChange()
+    {
+        if (Input.GetKey(KeyCode.A))
+        {
+            RotateDirection(rotationSpeed * Time.deltaTime);  // Changed this to negative
+        }
+
+        if (Input.GetKey(KeyCode.D))
+        {
+            RotateDirection(-rotationSpeed * Time.deltaTime);  // Changed this to positive
+        }
     }
     float CalculateSpeedBoost(float relativeAngle)
     {
-        float speedBoost;
-        // Use the sine function to get the speed boost, with a phase shift for negative angles
+        // Ensure the angle is between -180 and 180
         if (relativeAngle > 180)
         {
             relativeAngle -= 360;
         }
-        if (relativeAngle >= 0)
+        else if (relativeAngle < -180)
         {
-            speedBoost = 3 * Mathf.Sin(relativeAngle * Mathf.Deg2Rad);
+            relativeAngle += 360;
         }
-        else
-        {
-            speedBoost = 3 * Mathf.Sin((relativeAngle + 180f) * Mathf.Deg2Rad);
-        }
+
+        // Calculate the speed boost using the sine function
+        // This will automatically give positive values for angles between 0° and 180°
+        // and negative values for angles between -180° and 0°
+        float speedBoost = 3 * Mathf.Sin(relativeAngle * Mathf.Deg2Rad);
+
         return speedBoost;
     }
+
     float CheckWindAngleToSail()
     {
         Vector2 sailDirection = GetSailDirection();
@@ -124,4 +146,65 @@ public class PlayerShipController : MonoBehaviour
         return sailObject.transform.up;
     }
 
+    void HandleRotation()
+    {
+        if (Input.GetKey(KeyCode.A))
+        {
+            RotateDirection(rotationSpeed * Time.deltaTime);
+        }
+
+        if (Input.GetKey(KeyCode.D))
+        {
+            RotateDirection(-rotationSpeed * Time.deltaTime);
+        }
+    }
+
+    void RotateDirection(float angle)
+    {
+        float sin = Mathf.Sin(angle * Mathf.Deg2Rad);
+        float cos = Mathf.Cos(angle * Mathf.Deg2Rad);
+
+        Vector2 newDirection;
+        newDirection.x = (cos * currentDirection.x) - (sin * currentDirection.y);
+        newDirection.y = (sin * currentDirection.x) + (cos * currentDirection.y);
+        currentDirection = newDirection.normalized;
+
+        Vector2 sailDirection = sailObject.up;
+        Vector2 newSailDirection;
+        newSailDirection.x = (cos * sailDirection.x) - (sin * sailDirection.y);
+        newSailDirection.y = (sin * sailDirection.x) + (cos * sailDirection.y);
+        sailObject.up = newSailDirection;
+    }
+    void UpdateSpriteBasedOnRotation()
+    {
+        float generalAngle = -Mathf.Atan2(currentDirection.y, currentDirection.x) * Mathf.Rad2Deg + 90f;
+
+        // Normalize angle to [0, 360)
+        while (generalAngle < 0) generalAngle += 360;
+        while (generalAngle >= 360) generalAngle -= 360;
+
+        // Decide which sprite to use based on the general angle
+        int spriteIndex;
+        if (generalAngle >= 337.5f || generalAngle < 22.5f)
+            spriteIndex = 0; // North
+        else if (generalAngle >= 22.5f && generalAngle < 67.5f)
+            spriteIndex = 1; // North-East
+        else if (generalAngle >= 67.5f && generalAngle < 112.5f)
+            spriteIndex = 2; // East
+        else if (generalAngle >= 112.5f && generalAngle < 157.5f)
+            spriteIndex = 3; // South-East
+        else if (generalAngle >= 157.5f && generalAngle < 202.5f)
+            spriteIndex = 4; // South
+        else if (generalAngle >= 202.5f && generalAngle < 247.5f)
+            spriteIndex = 5; // South-West
+        else if (generalAngle >= 247.5f && generalAngle < 292.5f)
+            spriteIndex = 6; // West
+        else // 292.5f <= generalAngle < 337.5f
+            spriteIndex = 7; // North-West
+
+        // Assign the sprite
+        shipRenderer.sprite = rotationSprites[spriteIndex];
+    }
 }
+
+

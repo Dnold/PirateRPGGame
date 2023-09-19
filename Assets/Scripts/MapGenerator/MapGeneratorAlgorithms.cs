@@ -3,21 +3,28 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.InteropServices;
 using UnityEngine;
+using System.Diagnostics;
+using System;
 
 public class MapGeneratorAlgorithms : MapGeneratorHelper
 {
-    public bool useRandom;
+
+
+    [Header("Randomnes")]
+    public float standardDeviation = 0.15f;  // Adjust as needed. It controls the spread of the distribution.
+    public bool useRandomSeed;
     public string seed;
-    public float waterFillPercent = 50;
     public float flowerFillPercent = 1;
+    public float noiseThreshold = 0.4f;
+    public float noiseScale = 1f;
     public float grassChance = 70;
-    public int maxDistanceForIsolatedLand = 3;
+
 
     public int[,] FillMapRandom(Vector2Int size)
     {
         int[,] newMap = new int[size.x, size.y];
 
-        if (useRandom)
+        if (useRandomSeed)
         {
             seed = Time.time.ToString() + UnityEngine.Random.Range(0, 2000);
         }
@@ -89,17 +96,17 @@ public class MapGeneratorAlgorithms : MapGeneratorHelper
     #endregion
 
     #region FloodFill Region Detection
-    public List<List<Vector2Int>> GetRegions(int[,] map, params TileType[] tileTypes)
+    public List<List<Vector2Int>> GetRegions(int[,] map, Vector2Int size, params TileType[] tileTypes)
     {
         List<List<Vector2Int>> regions = new List<List<Vector2Int>>();
-        int[,] mapFlags = new int[chunkSize.x, chunkSize.y];
-        for (int x = 0; x < chunkSize.x; x++)
+        int[,] mapFlags = new int[size.x, size.y];
+        for (int x = 0; x < size.x; x++)
         {
-            for (int y = 0; y < chunkSize.y; y++)
+            for (int y = 0; y < size.y; y++)
             {
                 if (mapFlags[x, y] == 0 && tileTypes.Contains((TileType)map[x, y]))
                 {
-                    List<Vector2Int> newRegion = GetRegionTiles(x, y, map, tileTypes);
+                    List<Vector2Int> newRegion = GetRegionTiles(x, y, map, size, tileTypes);
                     regions.Add(newRegion);
                     foreach (Vector2Int tile in newRegion)
                     {
@@ -111,10 +118,10 @@ public class MapGeneratorAlgorithms : MapGeneratorHelper
         return regions;
     }
 
-    public List<Vector2Int> GetRegionTiles(int startX, int startY, int[,] map, params TileType[] treatedAsSameTypes)
+    public List<Vector2Int> GetRegionTiles(int startX, int startY, int[,] map, Vector2Int size, params TileType[] treatedAsSameTypes)
     {
         List<Vector2Int> tiles = new List<Vector2Int>();
-        int[,] mapFlags = new int[chunkSize.x, chunkSize.y];
+        int[,] mapFlags = new int[size.x, size.y];
         TileType currentTileType = (TileType)map[startX, startY];
 
         // If no specific types are provided, use only the current tile type.
@@ -140,7 +147,7 @@ public class MapGeneratorAlgorithms : MapGeneratorHelper
                 int neighbourX = tile.x + dirX[i];
                 int neighbourY = tile.y + dirY[i];
 
-                if (IsInMapRange(neighbourX, neighbourY, chunkSize) && mapFlags[neighbourX, neighbourY] == 0)
+                if (IsInMapRange(neighbourX, neighbourY, size) && mapFlags[neighbourX, neighbourY] == 0)
                 {
                     // If flood-filling a water region we encounter Sand or Grass,treat them as barriers/boundaries
                     if (!treatedAsSameTypes.Contains(currentTileType) && currentTileType == TileType.Water &&
@@ -224,7 +231,7 @@ public class MapGeneratorAlgorithms : MapGeneratorHelper
 
     public int[,] ProcessMap(int[,] map, TileType tileType, int threshold)
     {
-        List<List<Vector2Int>> regions = GetRegions(map, tileType);
+        List<List<Vector2Int>> regions = GetRegions(map, chunkSize, tileType);
 
         foreach (var region in regions)
         {
@@ -241,14 +248,14 @@ public class MapGeneratorAlgorithms : MapGeneratorHelper
     #endregion
 
     #region Populate Map
-    public int[,] PopulateGrassWithFlowers(List<Vector2Int> region, int[,] map)
+    public int[,] PopulateGrassWithFlowers(List<Vector2Int> region, int[,] map, TileType[] flowerTypes, TileType[] grassTypes)
     {
         if (grassTypes.Contains((TileType)map[region[0].x, region[0].y]))
         {
-            int rand = Random.Range(0, flowerTypes.Length);
+            int rand = UnityEngine.Random.Range(0, flowerTypes.Length);
             foreach (var tile in region)
             {
-                int generatedValue = Random.Range(0, 100);
+                int generatedValue = UnityEngine.Random.Range(0, 100);
                 if (generatedValue < flowerFillPercent)
                 {
                     map[tile.x, tile.y] = (int)flowerTypes[rand];
@@ -275,7 +282,7 @@ public class MapGeneratorAlgorithms : MapGeneratorHelper
         }
         return map;
     }
-    public int[,] SetGrassInRegions(List<List<Vector2Int>> regions, int[,] map)
+    public int[,] SetGrassInRegions(List<List<Vector2Int>> regions, int[,] map, TileType[] flowerTypes, TileType[] grassTypes)
     {
         foreach (var region in regions)
         {
@@ -296,17 +303,17 @@ public class MapGeneratorAlgorithms : MapGeneratorHelper
             List<List<Vector2Int>> subRegions = FindAllSubRegionsInLargerRegion(region, map, TileType.SmallGrass);
             foreach (var subRegion in subRegions)
             {
-                map = RandomizeGrassTypeInRegion(subRegion, map);
+                map = RandomizeGrassTypeInRegion(subRegion, map, grassTypes);
                 //map = PopulateGrassWithFlowers(subRegion, map);
             }
         }
         return map;
     }
-    public int[,] RandomizeGrassTypeInRegion(List<Vector2Int> region, int[,] map)
+    public int[,] RandomizeGrassTypeInRegion(List<Vector2Int> region, int[,] map, TileType[] grassTypes)
     {
         if (grassTypes.Contains((TileType)map[region[0].x, region[0].y]))
         {
-            int rand = Random.Range(0, grassTypes.Length);
+            int rand = UnityEngine.Random.Range(0, grassTypes.Length);
             foreach (var tile in region)
             {
                 map[tile.x, tile.y] = (int)grassTypes[rand];
@@ -315,6 +322,120 @@ public class MapGeneratorAlgorithms : MapGeneratorHelper
         return map;
     }
     public int[,] SetOceanDepth(int[,] fullMap)
+    {
+        int width = fullMap.GetLength(0);
+        int height = fullMap.GetLength(1);
+
+        // First, get a list of all island tiles
+        List<Vector2Int> islandPositions = new List<Vector2Int>();
+        for (int x = 0; x < width; x++)
+        {
+            for (int y = 0; y < height; y++)
+            {
+                if (fullMap[x, y] == (int)TileType.Island)
+                {
+                    islandPositions.Add(new Vector2Int(x, y));
+                }
+            }
+        }
+
+        for (int x = 0; x < width; x++)
+        {
+            for (int y = 0; y < height; y++)
+            {
+                if (fullMap[x, y] == (int)TileType.Water)
+                {
+                    // For every water tile, compute the distance to the nearest island
+                    int minDistance = GetDistanceToNearestIsland(new Vector2Int(x, y), islandPositions);
+
+                    // Based on minDistance, set the water depth
+                    if (minDistance < 2)
+                    {
+                        fullMap[x, y] = (int)TileType.shallowWater;
+                    }
+                    else if (minDistance < 5)
+                    {
+                        fullMap[x, y] = (int)TileType.lowWater;
+                    }
+                    else if (minDistance < 9)
+                    {
+                        fullMap[x, y] = (int)TileType.mediumWater;
+                    }
+                    else
+                    {
+                        fullMap[x, y] = (int)TileType.deepWater;
+                    }
+                }
+            }
+        }
+        return fullMap;
+    }
+    public int[,] BlurOceanDepthWithNoise(int[,] map, float noiseScale, float noiseThreshold)
+    {
+        int width = map.GetLength(0);
+        int height = map.GetLength(1);
+        int[,] blurredMap = new int[width, height];
+
+        for (int x = 1; x < width - 1; x++)
+        {
+            for (int y = 1; y < height - 1; y++)
+            {
+                // Check if the tile is a water type tile
+                if (map[x - 1, y - 1] == (int)TileType.shallowWater ||
+                    map[x - 1, y - 1] == (int)TileType.lowWater ||
+                    map[x - 1, y - 1] == (int)TileType.mediumWater ||
+                    map[x - 1, y - 1] == (int)TileType.deepWater)
+                {
+                    float noiseValue = Mathf.PerlinNoise(x * noiseScale, y * noiseScale);
+
+                    if (noiseValue > noiseThreshold)
+                    {
+                        // If noise value is above the threshold, compute average blur for this tile.
+                        int sum = 0;
+                        int count = 0; // Number of water tiles considered in the blur.
+
+                        for (int i = -1; i <= 1; i++)
+                        {
+                            for (int j = -1; j <= 1; j++)
+                            {
+                                if (map[x + i, y + j] == (int)TileType.shallowWater ||
+                                    map[x + i, y + j] == (int)TileType.lowWater ||
+                                    map[x + i, y + j] == (int)TileType.mediumWater ||
+                                    map[x + i, y + j] == (int)TileType.deepWater)
+                                {
+                                    sum += map[x + i, y + j];
+                                    count++;
+                                }
+                            }
+                        }
+
+                        blurredMap[x, y] = sum / count; // Average over the water cells only.
+                    }
+                    else
+                    {
+                        // If noise value is below the threshold, keep the original tile value.
+                        blurredMap[x, y] = map[x, y];
+                    }
+                }
+                else
+                {
+                    // If the tile is not a water type, copy it to the blurredMap without changes.
+                    blurredMap[x, y] = map[x, y];
+                }
+            }
+        }
+
+        return blurredMap;
+    }
+
+
+
+
+    #endregion
+
+    #region Benchmarks
+
+    public int[,] SetOceanDepthOld(int[,] fullMap)
     {
         int width = fullMap.GetLength(0);
         int height = fullMap.GetLength(1);
@@ -351,81 +472,51 @@ public class MapGeneratorAlgorithms : MapGeneratorHelper
         }
         return fullMap;
     }
-    public int[,] BlurOceanDepthWithNoise(int[,] map, float noiseScale, float noiseThreshold)
+
+    public int DistanceToNearestTile(Vector2Int start, int targetTileType, int[,] map)
     {
+        // Directions for left, right, up, down
+        Vector2Int[] directions =
+        {
+        new Vector2Int(-1, 0),
+        new Vector2Int(1, 0),
+        new Vector2Int(0, -1),
+        new Vector2Int(0, 1)
+    };
+
         int width = map.GetLength(0);
         int height = map.GetLength(1);
-        int[,] blurredMap = new int[width, height];
 
-        for (int x = 1; x < width - 1; x++)
+        bool[,] visited = new bool[width, height];
+        Queue<DataTile> queue = new Queue<DataTile>();
+        queue.Enqueue(new DataTile(start, 0));
+
+        while (queue.Count > 0)
         {
-            for (int y = 1; y < height - 1; y++)
+            DataTile currentTile = queue.Dequeue();
+
+            foreach (Vector2Int dir in directions)
             {
-                // 1. Scale and Translate the Coordinates:
-                float noiseValue = Mathf.PerlinNoise(x * noiseScale, y * noiseScale);
+                Vector2Int nextPos = currentTile.Position + dir;
 
-                // 2. Introduce the Noise to the Blur Function:
-                if (noiseValue > noiseThreshold)
+                // Check if the tile is within map boundaries and hasn't been visited yet
+                if (nextPos.x >= 0 && nextPos.x < width && nextPos.y >= 0 && nextPos.y < height && !visited[nextPos.x, nextPos.y])
                 {
-                    // If noise value is above the threshold, compute average blur for this tile.
-                    int sum = 0;
+                    visited[nextPos.x, nextPos.y] = true;
 
-                    for (int i = -1; i <= 1; i++)
+                    // If the next tile matches the targetTileType, return its distance from the start
+                    if (map[nextPos.x, nextPos.y] == targetTileType)
                     {
-                        for (int j = -1; j <= 1; j++)
-                        {
-                            sum += map[x + i, y + j];
-                        }
+                        return currentTile.Distance + 1;
                     }
 
-                    blurredMap[x, y] = sum / 9; // Average over the 3x3 cells.
-                }
-                else
-                {
-                    // If noise value is below the threshold, keep the original tile value.
-                    blurredMap[x, y] = map[x, y];
+                    queue.Enqueue(new DataTile(nextPos, currentTile.Distance + 1));
                 }
             }
         }
 
-        // Copy edges from original map to blurred map, since we didn't process them.
-        for (int x = 0; x < width; x++)
-        {
-            blurredMap[x, 0] = map[x, 0];
-            blurredMap[x, height - 1] = map[x, height - 1];
-        }
-
-        for (int y = 0; y < height; y++)
-        {
-            blurredMap[0, y] = map[0, y];
-            blurredMap[width - 1, y] = map[width - 1, y];
-        }
-
-        return blurredMap;
-    }
-
-
-    public int[,] AdjustIsolatedTiles(int[,] map)
-    {
-        int width = map.GetLength(0);
-        int height = map.GetLength(1);
-        // tweak this value as needed
-
-        for (int x = 0; x < width; x++)
-        {
-            for (int y = 0; y < height; y++)
-            {
-                if (map[x, y] == 0) // land tile
-                {
-                    int distance = DistanceToNearestTile(new Vector2Int(x, y), 1, map); // distance to nearest water tile
-                    if (distance > maxDistanceForIsolatedLand)
-                    {
-                        map[x, y] = 1; // Convert this land to water as it's too isolated
-                    }
-                }
-            }
-        }
-        return map;
+        return -1;  // Return -1 if no target tile is found
     }
     #endregion
 }
+

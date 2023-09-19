@@ -41,12 +41,10 @@ public struct TileValue
 
 public class Chunk
 {
-
     public Vector2Int center;
     public int[,] map;
     public Vector2Int size;
     public List<List<Vector2Int>> regions = new List<List<Vector2Int>>();
-
     public Chunk(Vector2Int _center, Vector2Int _size, int[,] _map, List<List<Vector2Int>> _regions)
     {
         center = _center;
@@ -54,7 +52,6 @@ public class Chunk
         size = _size;
         regions = _regions;
     }
-
 }
 public class DataTile
 {
