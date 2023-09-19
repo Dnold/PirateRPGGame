@@ -8,11 +8,15 @@ using Unity.VisualScripting;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.Tilemaps;
+using UnityEngine.SceneManagement;
+using System;
+using UnityEngine.UIElements;
 
 public class MapGenerator : MapGeneratorAlgorithms
 {
     bool mapIsLoaded = false;
     Chunk[,] chunks = new Chunk[0, 0];
+    public Transform playerPos;
 
     List<List<Vector2Int>> allRegions = new List<List<Vector2Int>>();
     int[,] fullmap;
@@ -33,14 +37,73 @@ public class MapGenerator : MapGeneratorAlgorithms
     public TileType[] flowerTypes;
     public TileType[] islandTiles;
 
-    
+    public RegionLoader regionLoader;
+
+
+    private void Update()
+    {
+        if (Input.GetKeyDown(KeyCode.E) && mapIsLoaded)
+        {
+            // Find all region centers
+            List<Vector2Int> regionCenters = new List<Vector2Int>();
+            foreach (var region in allRegions)
+            {
+                regionCenters.Add(GetRegionCenter(region));
+            }
+
+            // Identify the closest region to the player that's within a certain distance
+            Vector2Int? closestRegionCenter = GetClosestRegionToPlayer(regionCenters, playerPos.position);
+
+            if (closestRegionCenter.HasValue)
+            {
+                // Get the actual region based on its center
+                List<Vector2Int> closestRegion = allRegions.FirstOrDefault(region => GetRegionCenter(region) == closestRegionCenter.Value);
+
+                if (closestRegion != null)
+                {
+                    // Extract the map data for this region
+                    int[,] regionMap = regionLoader.CreateGrid(closestRegion, islandTiles, fullmap, chunkSize.x, chunkSize.y);
+
+                    // Upscale the region for more details
+                    int upscaleFactor = 4;  // Using 4 as the upscale factor
+                    int[,] upscaledRegion = regionLoader.UpscaleGrid(regionMap, upscaleFactor);
+
+                    // Upscale player's position
+                    Vector2Int upscaledPlayerTile = new Vector2Int((int)(playerPos.position.x * upscaleFactor * upscaledRegion.GetLength(0)), (int)(playerPos.position.y * upscaleFactor*upscaledRegion.GetLength(1)));
+
+                    // Find nearest valid tile in upscaled region for the player
+                    Vector2Int nearestTile = GetClosestIslandTile(upscaledPlayerTile,upscaledRegion,islandTiles);
+
+                    // Assign the upscaled region for display
+                    regionLoader.fullmap = upscaledRegion;
+                    regionLoader.regionSize = chunkSize * upscaleFactor;
+                    regionLoader.tiles = tiles;
+                    regionLoader.mapLoaded = true;
+                    regionLoader.playerSpawnTile = nearestTile;  // Adjusted to the nearest tile in the upscaled map
+
+                    SceneManager.LoadScene("SampleScene");
+                }
+                // ...
+               
+
+
+
+
+
+            }
+
+        }
+      
+    }
 
 
     void Start()
     {
+        DontDestroyOnLoad(this.gameObject);
+        playerPos = GameObject.FindGameObjectWithTag("Player").transform;
         GenerateChunks();
-        placeCam.pos = new Vector2Int((gridSize.x * chunkSize.x) / 2, (gridSize.y * chunkSize.y)/2+30);
-        placeCam.GetComponent<Camera>().orthographicSize = (chunkSize.y * gridSize.y)/2+30;
+        //placeCam.pos = new Vector2Int((gridSize.x * chunkSize.x) / 2, (gridSize.y * chunkSize.y)/2+30);
+        //placeCam.GetComponent<Camera>().orthographicSize = (chunkSize.y * gridSize.y)/2+30;
         mapIsLoaded = true;
     }
 

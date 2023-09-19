@@ -92,6 +92,66 @@ public class MapGeneratorHelper : MonoBehaviour
         }
         return count;
     }
+    public float minimalDistance = 50f; // Define your minimal distance threshold here.
+                                        // Convert LoadedMapRegionTilePosition to LoadedRegionTilePosition
+    public Vector2Int ToScaledPosition(Vector2Int mapRegionTilePosition)
+    {
+        return new Vector2Int((int)(mapRegionTilePosition.x * 4),
+                              (int)(mapRegionTilePosition.y * 4));
+    }
+
+    // Convert LoadedRegionTilePosition to LoadedMapRegionTilePosition
+    public Vector2Int ToMapRegionTilePosition(Vector2Int scaledRegionTilePosition)
+    {
+        return new Vector2Int((int)(scaledRegionTilePosition.x / 4),
+                              (int)(scaledRegionTilePosition.y / 4));
+    }
+    public Vector2Int GetClosestIslandTile(Vector2Int playerTilePos, int[,] upscaledRegion, TileType[] islandTiles)
+    {
+        Vector2Int closestTile = new Vector2Int(-1, -1);
+        float closestDistance = float.MaxValue;
+
+        for (int x = 0; x < upscaledRegion.GetLength(0); x++)
+        {
+            for (int y = 0; y < upscaledRegion.GetLength(1); y++)
+            {
+                // Assuming a value of 1 in upscaledRegion indicates it's part of the island.
+                // Adjust this condition based on your actual representation.
+                if (islandTiles.Contains((TileType)upscaledRegion[x, y]))
+                {
+                    Vector2Int currentTile = new Vector2Int(x, y);
+                    float currentDistance = (playerTilePos - currentTile).sqrMagnitude;
+
+                    if (currentDistance < closestDistance)
+                    {
+                        closestDistance = currentDistance;
+                        closestTile = currentTile;
+                    }
+                }
+            }
+        }
+
+        return closestTile;
+    }
+
+    // Call this method to get the center of the closest region under minimal distance to the player.
+    public Vector2Int? GetClosestRegionToPlayer(List<Vector2Int> regionCenters, Vector2 playerPosition)
+    {
+        Vector2Int? closestRegionCenter = null;
+        float closestDistanceSqr = minimalDistance * minimalDistance; // We will compare squared distances for performance.
+
+        foreach (Vector2Int regionCenter in regionCenters)
+        {
+            float currentDistanceSqr = (playerPosition - (Vector2)regionCenter).sqrMagnitude;
+            if (currentDistanceSqr < closestDistanceSqr)
+            {
+                closestDistanceSqr = currentDistanceSqr;
+                closestRegionCenter = regionCenter;
+            }
+        }
+
+        return closestRegionCenter; // This will be null if no region center is found within the minimal distance.
+    }
     public static int[,] ConcatenateChunks(Chunk[,] chunkse)
     {
         int chunkSizeX = chunkse[0, 0].size.x;
@@ -182,5 +242,17 @@ public class MapGeneratorHelper : MonoBehaviour
         return false;
     }
 
+    public Vector2Int GetRegionCenter(List<Vector2Int> regionTiles)
+    {
+        int totalX = 0;
+        int totalY = 0;
 
+        foreach (Vector2Int tile in regionTiles)
+        {
+            totalX += tile.x;
+            totalY += tile.y;
+        }
+
+        return new Vector2Int(totalX / regionTiles.Count, totalY / regionTiles.Count);
+    }
 }
