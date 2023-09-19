@@ -69,10 +69,10 @@ public class MapGenerator : MapGeneratorAlgorithms
                     int[,] upscaledRegion = regionLoader.UpscaleGrid(regionMap, upscaleFactor);
 
                     // Upscale player's position
-                    Vector2Int upscaledPlayerTile = new Vector2Int((int)(playerPos.position.x * upscaleFactor * upscaledRegion.GetLength(0)), (int)(playerPos.position.y * upscaleFactor*upscaledRegion.GetLength(1)));
+                    Vector2Int upscaledPlayerTile = new Vector2Int((int)playerPos.position.x, (int)playerPos.position.y);
 
                     // Find nearest valid tile in upscaled region for the player
-                    Vector2Int nearestTile = GetClosestIslandTile(upscaledPlayerTile,upscaledRegion,islandTiles);
+                    Vector2Int nearestTile = GetClosestIslandTile(upscaledPlayerTile *upscaledRegion.Length,upscaledRegion,islandTiles);
 
                     // Assign the upscaled region for display
                     regionLoader.fullmap = upscaledRegion;
