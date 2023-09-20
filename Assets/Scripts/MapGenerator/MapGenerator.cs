@@ -67,7 +67,7 @@ public class MapGenerator : MapGeneratorAlgorithms
                     // Upscale the region for more details
                     int upscaleFactor = 4;  // Using 4 as the upscale factor
                     int[,] upscaledRegion = regionLoader.UpscaleGrid(regionMap, upscaleFactor);
-
+                    upscaledRegion = SetOceanDepth(upscaledRegion);
                     // Upscale player's position
                     Vector2Int upscaledPlayerTile = new Vector2Int((int)playerPos.position.x, (int)playerPos.position.y);
 

@@ -7,6 +7,7 @@ public class PlayerMovement : MonoBehaviour
     public float speed;
     float moveX;
     float moveY;
+
     void Start()
     {
         

@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using Unity.VisualScripting;
+using UnityEditor.U2D.Aseprite;
 using UnityEngine;
 using UnityEngine.Tilemaps;
 
@@ -9,8 +10,9 @@ using UnityEngine.Tilemaps;
 public class RegionLoader : MonoBehaviour
 {
     public GameObject player;
-
-    
+    public Sprite[] trees;
+    public Sprite[] grassTiles;
+    GameObject playerObj;
     public bool mapLoaded = false;
     public Vector2Int playerSpawnTile;
     public int[,] fullmap;
@@ -56,26 +58,29 @@ public class RegionLoader : MonoBehaviour
             }
         }
 
-        
+
     }
 
     public void Update()
     {
-       
+
         if (GameObject.FindGameObjectWithTag("regionMap") != null && mapLoaded)
         {
             tilemap = (GameObject.FindGameObjectWithTag("regionMap").GetComponent<Tilemap>());
+            PlaceTrees();
             LoadRegionTiles(fullmap);
-            GameObject playerObj = Instantiate(player,new Vector3(playerSpawnTile.x,playerSpawnTile.y), Quaternion.identity);
-            Camera.main.transform.position = new Vector3(playerObj.transform.position.x,playerObj.transform.position.y,-10);
+            playerObj = Instantiate(player, new Vector3(playerSpawnTile.x, playerSpawnTile.y), Quaternion.identity);
+            Camera.main.transform.position = new Vector3(playerObj.transform.position.x, playerObj.transform.position.y, -10);
             Camera.main.transform.parent = playerObj.transform;
-            
-            mapLoaded = false; 
-           
-            
+
+            mapLoaded = false;
+
+
         }
-       
-    
+        if(playerObj != null)
+        {
+            playerObj.GetComponent<SpriteRenderer>().sortingOrder=regionSize.y-(int)playerObj.transform.position.y-1;
+        }
     }
     private int[,] InitializeGridWithWater(int width, int height)
     {
@@ -138,6 +143,43 @@ public class RegionLoader : MonoBehaviour
 
         return grid;
     }
+    public void PlaceTrees()
+    {
+        List<SpriteRenderer> renderers = new List<SpriteRenderer>();
+        for (int x = 0; x < regionSize.x; x++)
+        {
+            for (int y = 0; y < regionSize.y; y++)
+            {
+                if (fullmap[x, y] == (int)TileType.BigGrass)
+                {
+                    fullmap[x, y] = (int)TileType.Island;
+                    if (Random.Range(0, 100) > 75f)
+                    {
+
+                        GameObject tree = Instantiate(new GameObject(), new Vector3(x, y, 0), Quaternion.identity);
+                        var sr = tree.AddComponent<SpriteRenderer>();
+                        sr.sprite = trees[Random.Range(0, trees.Length)];
+                        sr.sortingOrder = regionSize.y-(int)tree.transform.position.y;
+
+                    }
+                }
+                if (fullmap[x, y] == (int)TileType.MediumGrass)
+                {
+                    fullmap[x, y] = (int)TileType.Island;
+                    if (Random.Range(0, 100) > 50f)
+                    {
+
+                        GameObject tree = Instantiate(new GameObject(), new Vector3(x, y, 0), Quaternion.identity);
+                        var sr = tree.AddComponent<SpriteRenderer>();
+                        sr.sprite = grassTiles[Random.Range(0, grassTiles.Length)];
+                        
+
+                    }
+                }
+            }
+        }
+    }
+
 
 
     public int[,] UpscaleGrid(int[,] grid, int upscaleFactor)
