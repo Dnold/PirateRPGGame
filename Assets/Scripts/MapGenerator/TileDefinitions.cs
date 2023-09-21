@@ -53,6 +53,26 @@ public class Chunk
         regions = _regions;
     }
 }
+public class Map
+{
+    public int id;
+    public Vector2Int center;
+    public int[,] fullMap;
+    public Chunk[,] chunks;
+    public List<List<Vector2Int>> regions;
+    public Vector2Int gridSize;
+    public Vector2Int chunkSize;
+    public Map(int ID, Vector2Int _center, int[,] map, Chunk[,] _chunks, List<List<Vector2Int>> _regions,Vector2Int _gridSize, Vector2Int _chunkSize)
+    {
+        id = ID;
+        center = _center;
+        fullMap = map;
+        chunks = _chunks;
+        regions = _regions;
+        gridSize = _gridSize;
+        chunkSize = _chunkSize;
+    }
+}
 public class DataTile
 {
     public Vector2Int Position { get; set; }

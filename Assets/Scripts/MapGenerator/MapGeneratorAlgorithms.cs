@@ -11,7 +11,7 @@ public class MapGeneratorAlgorithms : MapGeneratorHelper
 
 
     [Header("Randomnes")]
-    public float standardDeviation = 0.15f;  // Adjust as needed. It controls the spread of the distribution.
+    public float standardDeviation = 0.15f; 
     public bool useRandomSeed;
     public string seed;
     public float flowerFillPercent = 1;
@@ -62,8 +62,7 @@ public class MapGeneratorAlgorithms : MapGeneratorHelper
                 }
                 else if (neighbourCount < 4)
                 {
-                    // You might want to define another TileType as the "dead" type or have a way to determine it. 
-                    // For simplicity, I'm setting it to Empty.
+                 
                     map[x, y] = (int)TileType.Island;
                 }
                 // If neighbourCount is exactly 4, the cell remains unchanged.
@@ -106,7 +105,7 @@ public class MapGeneratorAlgorithms : MapGeneratorHelper
             {
                 if (mapFlags[x, y] == 0 && tileTypes.Contains((TileType)map[x, y]))
                 {
-                    List<Vector2Int> newRegion = GetRegionTiles(x, y, map, size, tileTypes);
+                    List<Vector2Int> newRegion = GetRegionTiles(x, y, map, tileTypes);
                     regions.Add(newRegion);
                     foreach (Vector2Int tile in newRegion)
                     {
@@ -118,13 +117,14 @@ public class MapGeneratorAlgorithms : MapGeneratorHelper
         return regions;
     }
 
-    public List<Vector2Int> GetRegionTiles(int startX, int startY, int[,] map, Vector2Int size, params TileType[] treatedAsSameTypes)
+    public List<Vector2Int> GetRegionTiles(int startX, int startY, int[,] map, params TileType[] treatedAsSameTypes)
     {
+        Vector2Int size = new Vector2Int(map.GetLength(0), map.GetLength(1));
         List<Vector2Int> tiles = new List<Vector2Int>();
         int[,] mapFlags = new int[size.x, size.y];
         TileType currentTileType = (TileType)map[startX, startY];
 
-        // If no specific types are provided, use only the current tile type.
+        // If no specific types are provided, only the current tile type.
         if (treatedAsSameTypes.Length == 0)
         {
             treatedAsSameTypes = new TileType[] { currentTileType };
@@ -147,16 +147,16 @@ public class MapGeneratorAlgorithms : MapGeneratorHelper
                 int neighbourX = tile.x + dirX[i];
                 int neighbourY = tile.y + dirY[i];
 
-                if (IsInMapRange(neighbourX, neighbourY, size) && mapFlags[neighbourX, neighbourY] == 0)
+                if (ToolExtensions.ChunkTools.IsInMapRange(neighbourX, neighbourY,size) && mapFlags[neighbourX, neighbourY] == 0)
                 {
-                    // If flood-filling a water region we encounter Sand or Grass,treat them as barriers/boundaries
+                    // If flood-filling a water region encounter Sand or Grass,treat  as barriers/boundaries
                     if (!treatedAsSameTypes.Contains(currentTileType) && currentTileType == TileType.Water &&
                        (map[neighbourX, neighbourY] == (int)TileType.Sand))
                     {
                         continue;
                     }
 
-                    // If the neighboring tile is one of the types we're treating as the same, explore it.
+                    // If the neighboring tile is one of the types it will treated as the same
                     if (treatedAsSameTypes.Contains((TileType)map[neighbourX, neighbourY]))
                     {
                         mapFlags[neighbourX, neighbourY] = 1;
@@ -168,43 +168,6 @@ public class MapGeneratorAlgorithms : MapGeneratorHelper
         return tiles;
     }
 
-    public List<Vector2Int> GetRegionTilesOfType(int startX, int startY, int[,] map, TileType targetTileType)
-    {
-        List<Vector2Int> tiles = new List<Vector2Int>();
-        int[,] mapFlags = new int[map.GetLength(0), map.GetLength(1)];
-        int tileType = map[startX, startY];
-
-        if (tileType != (int)targetTileType)
-            return tiles;  // Return an empty list if the tile type does not match the target tile type
-
-        Queue<Vector2Int> queue = new Queue<Vector2Int>();
-        queue.Enqueue(new Vector2Int(startX, startY));
-        mapFlags[startX, startY] = 1;
-
-        int[] dirX = { 0, 0, 1, -1 };
-        int[] dirY = { 1, -1, 0, 0 };
-
-        while (queue.Count > 0)
-        {
-            Vector2Int tile = queue.Dequeue();
-            tiles.Add(tile);
-
-            for (int i = 0; i < 4; i++)
-            {
-                int neighbourX = tile.x + dirX[i];
-                int neighbourY = tile.y + dirY[i];
-
-                Vector2Int neighbour = new Vector2Int(neighbourX, neighbourY);
-
-                if (IsInMapRange(neighbourX, neighbourY, chunkSize) && mapFlags[neighbourX, neighbourY] == 0 && map[neighbourX, neighbourY] == tileType)
-                {
-                    mapFlags[neighbourX, neighbourY] = 1;
-                    queue.Enqueue(neighbour);
-                }
-            }
-        }
-        return tiles;
-    }
     public List<List<Vector2Int>> FindAllSubRegionsInLargerRegion(List<Vector2Int> largerRegion, int[,] map, TileType targetTileType)
     {
         // To keep track of tiles that have been processed
@@ -216,7 +179,7 @@ public class MapGeneratorAlgorithms : MapGeneratorHelper
         {
             if (!processedTiles.Contains(tile) && map[tile.x, tile.y] == (int)targetTileType)
             {
-                List<Vector2Int> subRegion = GetRegionTilesOfType(tile.x, tile.y, map, targetTileType);
+                List<Vector2Int> subRegion = GetRegionTiles(tile.x, tile.y, map, targetTileType);
 
                 subRegions.Add(subRegion);
 
@@ -246,24 +209,8 @@ public class MapGeneratorAlgorithms : MapGeneratorHelper
         return map;
     }
     #endregion
-
     #region Populate Map
-    public int[,] PopulateGrassWithFlowers(List<Vector2Int> region, int[,] map, TileType[] flowerTypes, TileType[] grassTypes)
-    {
-        if (grassTypes.Contains((TileType)map[region[0].x, region[0].y]))
-        {
-            int rand = UnityEngine.Random.Range(0, flowerTypes.Length);
-            foreach (var tile in region)
-            {
-                int generatedValue = UnityEngine.Random.Range(0, 100);
-                if (generatedValue < flowerFillPercent)
-                {
-                    map[tile.x, tile.y] = (int)flowerTypes[rand];
-                }
-            }
-        }
-        return map;
-    }
+
     public int[,] Sandbanks(List<List<Vector2Int>> regions, int[,] map)
     {
         for (int i = 0; i < regions.Count; i++)
@@ -290,9 +237,9 @@ public class MapGeneratorAlgorithms : MapGeneratorHelper
             foreach (Vector2Int tile in region)
             {
                 // Check if the current tile is an island tile
-                if (map[tile.x, tile.y] == 0) // assuming 0 is island
+                if (map[tile.x, tile.y] == 0) // 0 = IslandTile
                 {
-                    // For every second island tile, check with randomness
+                    // For every island tile, check with randomness
                     if (UnityEngine.Random.Range(0f, 100f) >= grassChance)
                     {
                         map[tile.x, tile.y] = 3; // 3 for grass
@@ -304,7 +251,7 @@ public class MapGeneratorAlgorithms : MapGeneratorHelper
             foreach (var subRegion in subRegions)
             {
                 map = RandomizeGrassTypeInRegion(subRegion, map, grassTypes);
-                //map = PopulateGrassWithFlowers(subRegion, map);
+               
             }
         }
         return map;
@@ -326,7 +273,7 @@ public class MapGeneratorAlgorithms : MapGeneratorHelper
         int width = fullMap.GetLength(0);
         int height = fullMap.GetLength(1);
 
-        // First, get a list of all island tiles
+        //get a list of all island tiles
         List<Vector2Int> islandPositions = new List<Vector2Int>();
         for (int x = 0; x < width; x++)
         {
@@ -346,7 +293,7 @@ public class MapGeneratorAlgorithms : MapGeneratorHelper
                 if (fullMap[x, y] == (int)TileType.Water)
                 {
                     // For every water tile, compute the distance to the nearest island
-                    int minDistance = GetDistanceToNearestIsland(new Vector2Int(x, y), islandPositions);
+                    int minDistance = ToolExtensions.ChunkTools.GetDistanceToNearestIsland(new Vector2Int(x, y), islandPositions);
 
                     // Based on minDistance, set the water depth
                     if (minDistance < 2)
@@ -426,96 +373,6 @@ public class MapGeneratorAlgorithms : MapGeneratorHelper
         }
 
         return blurredMap;
-    }
-
-
-
-
-    #endregion
-
-    #region Benchmarks
-
-    public int[,] SetOceanDepthOld(int[,] fullMap)
-    {
-        int width = fullMap.GetLength(0);
-        int height = fullMap.GetLength(1);
-
-        for (int x = 0; x < width; x++)
-        {
-            for (int y = 0; y < height; y++)
-            {
-                if (fullMap[x, y] == (int)TileType.Water)
-                {
-                    int distance = DistanceToNearestTile(new Vector2Int(x, y), (int)TileType.Island, fullMap);
-
-                    if (distance >= 0) // Ensure there's an island in proximity
-                    {
-                        if (distance < 2)
-                        {
-                            fullMap[x, y] = (int)TileType.shallowWater;
-                        }
-                        else if (distance < 5)
-                        {
-                            fullMap[x, y] = (int)TileType.lowWater;
-                        }
-                        else if (distance < 9)
-                        {
-                            fullMap[x, y] = (int)TileType.mediumWater;
-                        }
-                        else
-                        {
-                            fullMap[x, y] = (int)TileType.deepWater;
-                        }
-                    }
-                }
-            }
-        }
-        return fullMap;
-    }
-
-    public int DistanceToNearestTile(Vector2Int start, int targetTileType, int[,] map)
-    {
-        // Directions for left, right, up, down
-        Vector2Int[] directions =
-        {
-        new Vector2Int(-1, 0),
-        new Vector2Int(1, 0),
-        new Vector2Int(0, -1),
-        new Vector2Int(0, 1)
-    };
-
-        int width = map.GetLength(0);
-        int height = map.GetLength(1);
-
-        bool[,] visited = new bool[width, height];
-        Queue<DataTile> queue = new Queue<DataTile>();
-        queue.Enqueue(new DataTile(start, 0));
-
-        while (queue.Count > 0)
-        {
-            DataTile currentTile = queue.Dequeue();
-
-            foreach (Vector2Int dir in directions)
-            {
-                Vector2Int nextPos = currentTile.Position + dir;
-
-                // Check if the tile is within map boundaries and hasn't been visited yet
-                if (nextPos.x >= 0 && nextPos.x < width && nextPos.y >= 0 && nextPos.y < height && !visited[nextPos.x, nextPos.y])
-                {
-                    visited[nextPos.x, nextPos.y] = true;
-
-                    // If the next tile matches the targetTileType, return its distance from the start
-                    if (map[nextPos.x, nextPos.y] == targetTileType)
-                    {
-                        return currentTile.Distance + 1;
-                    }
-
-                    queue.Enqueue(new DataTile(nextPos, currentTile.Distance + 1));
-                }
-            }
-        }
-
-        return -1;  // Return -1 if no target tile is found
     }
     #endregion
 }

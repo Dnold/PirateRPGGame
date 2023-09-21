@@ -49,30 +49,16 @@ public class PlayerShipController : MonoBehaviour
         //HEHE PUPU
         // Setze die aktuelle Geschwindigkeit basierend auf dem Gang.
         currentSpeed = maxSpeed * gearSpeeds[gearState + 3]; // +3, um den Index im Bereich von 0 bis 6 zu halten.
-
-
-
         HandleDirectionChange();
-
- 
-        
 
         transform.position += (Vector3)currentDirection * currentSpeed * Time.deltaTime;
 
-       
-        //if (Input.GetKey(KeyCode.Q))
-        //{
-        //    sailObject.transform.Rotate(Vector3.forward * sailRotationSpeed * Time.deltaTime);
-        //}
-
-        //// Wenn die E-Taste gedr�ckt wird, dreht das Segel nach rechts.
-        //if (Input.GetKey(KeyCode.E))
-        //{
-        //    sailObject.transform.Rotate(-Vector3.forward * sailRotationSpeed * Time.deltaTime, Space.World);
-        //}
-
         ApplySpeedBoost();
         UpdateSpriteBasedOnRotation();
+        if (Input.GetKeyDown(KeyCode.E))
+        {
+            GameManager.instance.GenerateRegionLoader(new Vector2Int((int)transform.position.x, (int)transform.position.y));
+        }
     }
     //Total Time wasted here: 2h
     //Increment the counter for each time you think you can redacted
@@ -85,8 +71,8 @@ public class PlayerShipController : MonoBehaviour
             effectiveSpeed = 1;
         }
 
-        transform.position += new Vector3(currentDirection.x,currentDirection.y) * (baseSpeed + effectiveSpeed) * Time.deltaTime;
-
+        transform.position += new Vector3(currentDirection.x, currentDirection.y) * (baseSpeed + effectiveSpeed) * Time.deltaTime;
+       
 
     }
     void HandleDirectionChange()
@@ -144,19 +130,6 @@ public class PlayerShipController : MonoBehaviour
     Vector2 GetSailDirection()
     {
         return sailObject.transform.up;
-    }
-
-    void HandleRotation()
-    {
-        if (Input.GetKey(KeyCode.A))
-        {
-            RotateDirection(rotationSpeed * Time.deltaTime);
-        }
-
-        if (Input.GetKey(KeyCode.D))
-        {
-            RotateDirection(-rotationSpeed * Time.deltaTime);
-        }
     }
 
     void RotateDirection(float angle)

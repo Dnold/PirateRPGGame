@@ -1,6 +1,9 @@
 using Unity;
 using System;
 using UnityEngine;
+using System.Linq;
+using System.Collections.Generic;
+
 namespace ToolExtensions
 {
 
@@ -23,11 +26,11 @@ namespace ToolExtensions
         }
         public static Chunk[] To1DArray(Chunk[,] input)
         {
-            // Step 1: get total size of 2D array, and allocate 1D array.
+            //get total size of 2D array, and allocate 1D array.
             int size = input.Length;
             Chunk[] result = new Chunk[size];
 
-            // Step 2: copy 2D array elements into a 1D array.
+            //copy 2D array elements into a 1D array.
             int write = 0;
             for (int i = 0; i <= input.GetUpperBound(0); i++)
             {
@@ -36,15 +39,112 @@ namespace ToolExtensions
                     result[write++] = input[i, z];
                 }
             }
-            // Step 3: return the new array.
+
             return result;
         }
+        public static bool IsBoundaryTile(Vector2Int tile, int[,] map, Vector2Int size, params TileType[] tileTypes)
+        {
+            int[] dirX = { 0, 0, 1, -1 };
+            int[] dirY = { 1, -1, 0, 0 };
+
+            for (int i = 0; i < 4; i++)
+            {
+                int neighbourX = tile.x + dirX[i];
+                int neighbourY = tile.y + dirY[i];
+
+                // If out of range, continue to next iteration
+                if (!IsInMapRange(neighbourX, neighbourY, size))
+                    continue;
+
+                if (!tileTypes.Contains((TileType)map[neighbourX, neighbourY]))
+                {
+                    return true;  // This tile has a neighbor of a different type, so it's a boundary tile.
+                }
+            }
+            return false;
+        }
+        public static bool IsInMapRange(int x, int y, Vector2Int size)
+        {
+            return x >= 0 && x < size.x && y >= 0 && y < size.y;
+        }
+        public static List<Vector2Int> GetClosestRegion(Vector2Int playerTilePos, List<List<Vector2Int>> regions, TileType[] islandTiles)
+        {
+            List<Vector2Int> closestRegion = new List<Vector2Int>();
+            float closestDistance = float.MaxValue;
+
+            //Check for every tile in region if its the closest
+            for (int x = 0; x < regions.Count(); x++)
+            {
+                //Compare Distance
+                Vector2Int currentTile = GetRegionCenter(regions[x]);
+                float currentDistance = (playerTilePos - currentTile).sqrMagnitude;
+
+                if (currentDistance < closestDistance)
+                {
+                    closestDistance = currentDistance;
+                    closestRegion = regions[x];
+                }
+            }
 
 
 
+            return closestRegion;
+        }
+        public static Vector2Int GetClosestIslandTile(Vector2Int playerTilePos, int[,] upscaledRegion, TileType[] islandTiles)
+        {
+            Vector2Int closestTile = new Vector2Int(-1, -1); // (-1,-1) for not found
+            float closestDistance = float.MaxValue;
 
-        /// <summary>
-        /// Enum to define various tile types.
-        /// </summary>
+            //Check for every tile in region if its the closest
+            for (int x = 0; x < upscaledRegion.GetLength(0); x++)
+            {
+                for (int y = 0; y < upscaledRegion.GetLength(1); y++)
+                {
+                    if (islandTiles.Contains((TileType)upscaledRegion[x, y]))
+                    {
+                        //Compare Distance
+                        Vector2Int currentTile = new Vector2Int(x, y);
+                        float currentDistance = (playerTilePos - currentTile).sqrMagnitude;
+
+                        if (currentDistance < closestDistance)
+                        {
+                            closestDistance = currentDistance;
+                            closestTile = currentTile;
+                        }
+                    }
+                }
+            }
+
+            return closestTile;
+        }
+        public static int GetDistanceToNearestIsland(Vector2Int position, List<Vector2Int> islandPositions)
+        {
+            int minDistance = Int32.MaxValue;
+            foreach (var islandPos in islandPositions)
+            {
+                int distance = Math.Abs(islandPos.x - position.x) + Math.Abs(islandPos.y - position.y);
+                if (distance < minDistance)
+                {
+                    minDistance = distance;
+                }
+            }
+            return minDistance;
+        }
+        public static Vector2Int GetRegionCenter(List<Vector2Int> regionTiles)
+        {
+            int totalX = 0;
+            int totalY = 0;
+
+            foreach (Vector2Int tile in regionTiles)
+            {
+                totalX += tile.x;
+                totalY += tile.y;
+            }
+
+            return new Vector2Int(totalX / regionTiles.Count, totalY / regionTiles.Count);
+        }
     }
 }
+
+
+

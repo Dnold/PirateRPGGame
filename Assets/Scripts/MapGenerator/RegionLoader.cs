@@ -13,70 +13,21 @@ public class RegionLoader : MonoBehaviour
     public Sprite[] trees;
     public Sprite[] grassTiles;
     GameObject playerObj;
-    public bool mapLoaded = false;
-    public Vector2Int playerSpawnTile;
-    public int[,] fullmap;
-    public Tilemap? tilemap;
-    public TileValue[] tiles; // Assuming you have an array or list of 'TileValue' which contains information about each tile type.
+
+    
+    
+   
 
     public Vector2Int regionSize; // This would be the size of your upscaled region.
 
-    public float minimalDistance = 50f; // Define your minimal distance threshold here.
 
-    // Call this method to get the center of the closest region under minimal distance to the player.
 
     private void Start()
     {
         DontDestroyOnLoad(gameObject);
     }
-    public void LoadRegionTiles(int[,] regionGrid)
-    {
-        // Clear tilemaps
-        tilemap.ClearAllTiles();
-
-
-        // Loop through every tile in the region grid
-        for (int x = 0; x < regionSize.x; x++)
-        {
-            for (int y = 0; y < regionSize.y; y++)
-            {
-                // Get the global position of the tile.
-                Vector3Int position = new Vector3Int(x, y, 0);
-
-                // Get the tile type from the region grid
-                int value = regionGrid[x, y];
-
-
-                // Set the main tile (ground, island, etc.)
-                tilemap.SetTile(position, tiles.FirstOrDefault(e => (int)e.Type == value).tile);
-
-                //// If this is a region tile, set the top tile.
-                //if (regionTiles.Contains(new Vector2Int(x, y)))
-                //{
-                //    tilemapTop.SetTile(position, tiles[4].tile);
-                //}
-            }
-        }
-
-
-    }
-
     public void Update()
     {
-
-        if (GameObject.FindGameObjectWithTag("regionMap") != null && mapLoaded)
-        {
-            tilemap = (GameObject.FindGameObjectWithTag("regionMap").GetComponent<Tilemap>());
-            PlaceTrees();
-            LoadRegionTiles(fullmap);
-            playerObj = Instantiate(player, new Vector3(playerSpawnTile.x, playerSpawnTile.y), Quaternion.identity);
-            Camera.main.transform.position = new Vector3(playerObj.transform.position.x, playerObj.transform.position.y, -10);
-            Camera.main.transform.parent = playerObj.transform;
-
-            mapLoaded = false;
-
-
-        }
         if(playerObj != null)
         {
             playerObj.GetComponent<SpriteRenderer>().sortingOrder=regionSize.y-(int)playerObj.transform.position.y-1;
@@ -114,12 +65,12 @@ public class RegionLoader : MonoBehaviour
         return tileWeights.Aggregate((l, r) => l.Value > r.Value ? l : r).Key;
     }
 
-    public int[,] CreateGrid(List<Vector2Int> regionTiles, TileType[] supportedTileTypes, int[,] sourceGrid, int desiredWidth, int desiredHeight)
+    public int[,] CreateGrid(List<Vector2Int> regionTiles, int[,] sourceGrid, int desiredWidth, int desiredHeight)
     {
         int[,] grid = InitializeGridWithWater(desiredWidth, desiredHeight);
 
-        // Convert the supported types to a HashSet for efficient lookups
-        HashSet<TileType> supportedTypes = new HashSet<TileType>(supportedTileTypes);
+     
+    
 
         // Determine the bounding box of the regionTiles
         int minX = regionTiles.Min(tile => tile.x);
@@ -135,15 +86,18 @@ public class RegionLoader : MonoBehaviour
         {
             TileType currentType = (TileType)sourceGrid[tile.x, tile.y];
 
-            if (supportedTypes.Contains(currentType))
-            {
                 grid[tile.x - minX + offsetX, tile.y - minY + offsetY] = (int)currentType;
-            }
+            
         }
+        
+        grid = UpscaleGrid(grid, 4);
+        regionSize = new Vector2Int(grid.GetLength(0), grid.GetLength(1));
+        grid = PlaceTrees(grid);
+      
 
         return grid;
     }
-    public void PlaceTrees()
+    public int[,] PlaceTrees(int[,] fullmap)
     {
         List<SpriteRenderer> renderers = new List<SpriteRenderer>();
         for (int x = 0; x < regionSize.x; x++)
@@ -178,6 +132,7 @@ public class RegionLoader : MonoBehaviour
                 }
             }
         }
+        return fullmap;
     }
 
 
