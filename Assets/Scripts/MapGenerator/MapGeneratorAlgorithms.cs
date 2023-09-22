@@ -5,6 +5,7 @@ using System.Runtime.InteropServices;
 using UnityEngine;
 using System.Diagnostics;
 using System;
+using ToolExtensions;
 
 public class MapGeneratorAlgorithms : MapGeneratorHelper
 {
@@ -293,10 +294,10 @@ public class MapGeneratorAlgorithms : MapGeneratorHelper
                 if (fullMap[x, y] == (int)TileType.Water)
                 {
                     // For every water tile, compute the distance to the nearest island
-                    int minDistance = ToolExtensions.ChunkTools.GetDistanceToNearestIsland(new Vector2Int(x, y), islandPositions);
+                    int minDistance = ChunkTools.GetDistanceToNearestIsland(new Vector2Int(x, y), islandPositions);
 
                     // Based on minDistance, set the water depth
-                    if (minDistance < 2)
+                    if (minDistance < 4)
                     {
                         fullMap[x, y] = (int)TileType.shallowWater;
                     }

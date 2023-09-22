@@ -46,7 +46,7 @@ public class TileGenerator : MonoBehaviour
         {
             foreach(var tile in region)
             {
-                tilemapTop.SetTile(new Vector3Int(tile.x,tile.y), (tiles).FirstOrDefault(e => e.Type == TileType.Empty).tile);
+                tilemapTop.SetTile(new Vector3Int(tile.x,tile.y), tiles[0].tile);
             }
         }
     }

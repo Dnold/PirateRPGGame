@@ -143,6 +143,21 @@ namespace ToolExtensions
 
             return new Vector2Int(totalX / regionTiles.Count, totalY / regionTiles.Count);
         }
+        public static Vector2Int FindWaterRandomWaterTile(int[,] map)
+        {
+            List<Vector2Int> waterTiles = new List<Vector2Int>();
+            for(int x = 0; x < map.GetLength(0); x++)
+            {
+                for (int y = 0; y < map.GetLength(1); y++)
+                {
+                    if (map[x,y] == (int)TileType.deepWater)
+                    {
+                        waterTiles.Add(new Vector2Int(x,y));
+                    }
+                }
+            }
+            return waterTiles[UnityEngine.Random.Range(0, waterTiles.Count())];
+        }
     }
 }
 

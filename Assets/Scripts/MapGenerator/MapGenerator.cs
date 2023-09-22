@@ -59,6 +59,7 @@ public class MapGenerator : MapGeneratorAlgorithms
 
 
         newmap = SetOceanDepth(newmap); //Apply Ocean Depth
+    
 
         //Get all regions from the full map
         allRegions = GetRegions(newmap, new Vector2Int(gridSize.x * chunkSize.x, gridSize.y * chunkSize.y), islandTiles);

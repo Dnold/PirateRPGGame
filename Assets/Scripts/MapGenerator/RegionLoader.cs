@@ -9,10 +9,10 @@ using UnityEngine.Tilemaps;
 
 public class RegionLoader : MonoBehaviour
 {
-    public GameObject player;
+    
     public Sprite[] trees;
     public Sprite[] grassTiles;
-    GameObject playerObj;
+  
 
     
     
@@ -28,10 +28,10 @@ public class RegionLoader : MonoBehaviour
     }
     public void Update()
     {
-        if(playerObj != null)
-        {
-            playerObj.GetComponent<SpriteRenderer>().sortingOrder=regionSize.y-(int)playerObj.transform.position.y-1;
-        }
+        //if(playerObj != null)
+        //{
+        //    playerObj.GetComponent<SpriteRenderer>().sortingOrder=regionSize.y-(int)playerObj.transform.position.y-1;
+        //}
     }
     private int[,] InitializeGridWithWater(int width, int height)
     {

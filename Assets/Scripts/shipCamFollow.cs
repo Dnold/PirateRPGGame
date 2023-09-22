@@ -8,12 +8,16 @@ public class shipCamFollow : MonoBehaviour
     public Transform playerPos;
     void Start()
     {
-        
+
     }
 
     // Update is called once per frame
-    void Update()
+    void LateUpdate()
     {
-        transform.position = new Vector3(playerPos.position.x, playerPos.position.y, -10);
+        if (playerPos != null)
+        {
+            transform.position = new Vector3(playerPos.position.x, playerPos.position.y, -10);
+        }
+
     }
 }
