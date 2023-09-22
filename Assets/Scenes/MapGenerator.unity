@@ -559,7 +559,7 @@ Camera:
   far clip plane: 1000
   field of view: 60
   orthographic: 1
-  orthographic size: 23
+  orthographic size: 25
   m_Depth: -1
   m_CullingMask:
     serializedVersion: 2
@@ -584,7 +584,7 @@ Transform:
   m_GameObject: {fileID: 1015720022}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 56.6, y: 19.2971, z: -10}
+  m_LocalPosition: {x: -90, y: 33, z: -10}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -615,9 +615,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6a160d838ff8b4b4693ac20007e008c7, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_AssetsPPU: 32
-  m_RefResolutionX: 320
-  m_RefResolutionY: 180
+  m_AssetsPPU: 16
+  m_RefResolutionX: 1920
+  m_RefResolutionY: 1080
   m_UpscaleRT: 0
   m_PixelSnapping: 0
   m_CropFrameX: 0
@@ -668,15 +668,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   MapGeneratorPrefab: {fileID: 3730447458755924698, guid: f36b84363997fb44fb909491d5858702, type: 3}
-  MapGeneratorObject: {fileID: 0}
-  mapGenerator: {fileID: 0}
-  tileGenerator: {fileID: 0}
-  regionLoader: {fileID: 0}
   characterPlayer: {fileID: 168376425511337805, guid: fc116472e3bac7644b36f7e7a2d39a41, type: 3}
   shipPlayer: {fileID: 4391601616314280090, guid: 8604605839542334687078bf9171d1b3, type: 3}
-  shipPlayerObj: {fileID: 0}
-  characterPlayerObj: {fileID: 0}
-  camFollow: {fileID: 1015720026}
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0
