@@ -67,7 +67,7 @@ public class RegionLoader : MonoBehaviour
         return tileWeights.Aggregate((l, r) => l.Value > r.Value ? l : r).Key;
     }
 
-    public int[,] CreateGrid(List<Vector2Int> regionTiles, int[,] sourceGrid, int desiredWidth, int desiredHeight)
+    public int[,] CreateGrid(Region region, int[,] sourceGrid, int desiredWidth, int desiredHeight)
     {
         int[,] grid = InitializeGridWithWater(desiredWidth, desiredHeight);
 
@@ -75,16 +75,16 @@ public class RegionLoader : MonoBehaviour
     
 
         // Determine the bounding box of the regionTiles
-        int minX = regionTiles.Min(tile => tile.x);
-        int maxX = regionTiles.Max(tile => tile.x);
-        int minY = regionTiles.Min(tile => tile.y);
-        int maxY = regionTiles.Max(tile => tile.y);
+        int minX = region.regionTiles.Min(tile => tile.x);
+        int maxX = region.regionTiles.Max(tile => tile.x);
+        int minY = region.regionTiles.Min(tile => tile.y);
+        int maxY = region.regionTiles.Max(tile => tile.y);
 
         int offsetX = (desiredWidth - (maxX - minX + 1)) / 2;
         int offsetY = (desiredHeight - (maxY - minY + 1)) / 2;
 
         // Place the region tiles into the grid, filtering by supported tile types
-        foreach (Vector2Int tile in regionTiles)
+        foreach (Vector2Int tile in region.regionTiles)
         {
             TileType currentType = (TileType)sourceGrid[tile.x, tile.y];
 

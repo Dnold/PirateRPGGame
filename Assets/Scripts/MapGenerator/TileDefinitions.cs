@@ -44,8 +44,8 @@ public class Chunk
     public Vector2Int center;
     public int[,] map;
     public Vector2Int size;
-    public List<List<Vector2Int>> regions = new List<List<Vector2Int>>();
-    public Chunk(Vector2Int _center, Vector2Int _size, int[,] _map, List<List<Vector2Int>> _regions)
+    public List<Region> regions = new List<Region>();
+    public Chunk(Vector2Int _center, Vector2Int _size, int[,] _map, List<Region> _regions)
     {
         center = _center;
         map = _map;
@@ -59,10 +59,10 @@ public class Map
     public Vector2Int center;
     public int[,] fullMap;
     public Chunk[,] chunks;
-    public List<List<Vector2Int>> regions;
+    public List<Region> regions;
     public Vector2Int gridSize;
     public Vector2Int chunkSize;
-    public Map(int ID, Vector2Int _center, int[,] map, Chunk[,] _chunks, List<List<Vector2Int>> _regions,Vector2Int _gridSize, Vector2Int _chunkSize)
+    public Map(int ID, Vector2Int _center, int[,] map, Chunk[,] _chunks, List<Region> _regions,Vector2Int _gridSize, Vector2Int _chunkSize)
     {
         id = ID;
         center = _center;
@@ -71,6 +71,21 @@ public class Map
         regions = _regions;
         gridSize = _gridSize;
         chunkSize = _chunkSize;
+    }
+}
+public class Region
+{
+    public int ID;
+    public List<Vector2Int> regionTiles;
+    public Vector2Int center;
+    public int[,] upscaledMap;
+    public List<Region> subRegions;
+
+    public Region(int iD, List<Vector2Int> regionTiles, Vector2Int center)
+    {
+        ID = iD;
+        this.regionTiles = regionTiles;
+        this.center = center;
     }
 }
 public class DataTile

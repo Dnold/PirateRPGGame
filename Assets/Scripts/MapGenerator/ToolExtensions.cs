@@ -67,16 +67,16 @@ namespace ToolExtensions
         {
             return x >= 0 && x < size.x && y >= 0 && y < size.y;
         }
-        public static List<Vector2Int> GetClosestRegion(Vector2Int playerTilePos, List<List<Vector2Int>> regions, TileType[] islandTiles)
+        public static Region GetClosestRegion(Vector2Int playerTilePos, List<Region> regions, TileType[] islandTiles)
         {
-            List<Vector2Int> closestRegion = new List<Vector2Int>();
+            Region closestRegion = null;
             float closestDistance = float.MaxValue;
 
             //Check for every tile in region if its the closest
             for (int x = 0; x < regions.Count(); x++)
             {
                 //Compare Distance
-                Vector2Int currentTile = GetRegionCenter(regions[x]);
+                Vector2Int currentTile = GetRegionCenter(regions[x].regionTiles);
                 float currentDistance = (playerTilePos - currentTile).sqrMagnitude;
 
                 if (currentDistance < closestDistance)

@@ -12,7 +12,7 @@ public class MapGeneratorAlgorithms : MapGeneratorHelper
 
 
     [Header("Randomnes")]
-    public float standardDeviation = 0.15f;
+    public float standardDeviation = 0.15f; 
     public bool useRandomSeed;
     public string seed;
     public float flowerFillPercent = 1;
@@ -63,7 +63,7 @@ public class MapGeneratorAlgorithms : MapGeneratorHelper
                 }
                 else if (neighbourCount < 4)
                 {
-
+                 
                     map[x, y] = (int)TileType.Island;
                 }
                 // If neighbourCount is exactly 4, the cell remains unchanged.
@@ -96,22 +96,26 @@ public class MapGeneratorAlgorithms : MapGeneratorHelper
     #endregion
 
     #region FloodFill Region Detection
-    public List<List<Vector2Int>> GetRegions(int[,] map, Vector2Int size, params TileType[] tileTypes)
+    public List<Region> GetRegions(int[,] map, Vector2Int size, params TileType[] tileTypes)
     {
-        List<List<Vector2Int>> regions = new List<List<Vector2Int>>();
+        List<Region> regions = new List<Region>();
         int[,] mapFlags = new int[size.x, size.y];
+        int count = 0;
         for (int x = 0; x < size.x; x++)
         {
             for (int y = 0; y < size.y; y++)
             {
                 if (mapFlags[x, y] == 0 && tileTypes.Contains((TileType)map[x, y]))
                 {
-                    List<Vector2Int> newRegion = GetRegionTiles(x, y, map, tileTypes);
+                    Region newRegion;
+                    List<Vector2Int> newRegionTiles = GetRegionTiles(x, y, map, tileTypes);
+                    newRegion = new Region(count,newRegionTiles, size / 2);
                     regions.Add(newRegion);
-                    foreach (Vector2Int tile in newRegion)
+                    foreach (Vector2Int tile in newRegion.regionTiles)
                     {
                         mapFlags[tile.x, tile.y] = 1;
                     }
+                    count++;
                 }
             }
         }
@@ -148,7 +152,7 @@ public class MapGeneratorAlgorithms : MapGeneratorHelper
                 int neighbourX = tile.x + dirX[i];
                 int neighbourY = tile.y + dirY[i];
 
-                if (ToolExtensions.ChunkTools.IsInMapRange(neighbourX, neighbourY, size) && mapFlags[neighbourX, neighbourY] == 0)
+                if (ToolExtensions.ChunkTools.IsInMapRange(neighbourX, neighbourY,size) && mapFlags[neighbourX, neighbourY] == 0)
                 {
                     // If flood-filling a water region encounter Sand or Grass,treat  as barriers/boundaries
                     if (!treatedAsSameTypes.Contains(currentTileType) && currentTileType == TileType.Water &&
@@ -195,13 +199,13 @@ public class MapGeneratorAlgorithms : MapGeneratorHelper
 
     public int[,] ProcessMap(int[,] map, TileType tileType, int threshold)
     {
-        List<List<Vector2Int>> regions = GetRegions(map, chunkSize, tileType);
+        List<Region> regions = GetRegions(map, chunkSize, tileType);
 
         foreach (var region in regions)
         {
-            if (region.Count < threshold)
+            if (region.regionTiles.Count < threshold)
             {
-                foreach (Vector2Int tile in region)
+                foreach (Vector2Int tile in region.regionTiles)
                 {
                     map[tile.x, tile.y] = (int)TileType.Water; //convert the tiles to Water if they're below the threshold
                 }
@@ -212,13 +216,13 @@ public class MapGeneratorAlgorithms : MapGeneratorHelper
     #endregion
     #region Populate Map
 
-    public int[,] Sandbanks(List<List<Vector2Int>> regions, int[,] map)
+    public int[,] Sandbanks(List<Region> regions, int[,] map)
     {
         for (int i = 0; i < regions.Count; i++)
         {
             foreach (var region in regions)
             {
-                foreach (var tile in region)
+                foreach (var tile in region.regionTiles)
                 {
                     int waterCount = WaterCount(tile.x, tile.y, map, chunkSize);
                     if (waterCount > 0)
@@ -230,12 +234,12 @@ public class MapGeneratorAlgorithms : MapGeneratorHelper
         }
         return map;
     }
-    public int[,] SetGrassInRegions(List<List<Vector2Int>> regions, int[,] map, TileType[] flowerTypes, TileType[] grassTypes)
+    public int[,] SetGrassInRegions(List<Region> regions, int[,] map, TileType[] flowerTypes, TileType[] grassTypes)
     {
         foreach (var region in regions)
         {
 
-            foreach (Vector2Int tile in region)
+            foreach (Vector2Int tile in region.regionTiles)
             {
                 // Check if the current tile is an island tile
                 if (map[tile.x, tile.y] == 0) // 0 = IslandTile
@@ -247,12 +251,12 @@ public class MapGeneratorAlgorithms : MapGeneratorHelper
                     }
                 }
             }
-            map = SmoothMapInRegion(region, map, TileType.SmallGrass);
-            List<List<Vector2Int>> subRegions = FindAllSubRegionsInLargerRegion(region, map, TileType.SmallGrass);
+            map = SmoothMapInRegion(region.regionTiles, map, TileType.SmallGrass);
+            List<List<Vector2Int>> subRegions = FindAllSubRegionsInLargerRegion(region.regionTiles, map, TileType.SmallGrass);
             foreach (var subRegion in subRegions)
             {
                 map = RandomizeGrassTypeInRegion(subRegion, map, grassTypes);
-
+               
             }
         }
         return map;
@@ -297,15 +301,15 @@ public class MapGeneratorAlgorithms : MapGeneratorHelper
                     int minDistance = ChunkTools.GetDistanceToNearestIsland(new Vector2Int(x, y), islandPositions);
 
                     // Based on minDistance, set the water depth
-                    if (minDistance < 4 * scale)
+                    if (minDistance < 4*scale)
                     {
                         fullMap[x, y] = (int)TileType.shallowWater;
                     }
-                    else if (minDistance < 5 * scale)
+                    else if (minDistance < 5*scale)
                     {
                         fullMap[x, y] = (int)TileType.lowWater;
                     }
-                    else if (minDistance < 9 * scale)
+                    else if (minDistance < 9*scale)
                     {
                         fullMap[x, y] = (int)TileType.mediumWater;
                     }

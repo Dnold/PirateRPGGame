@@ -16,7 +16,7 @@ public class MapGenerator : MapGeneratorAlgorithms
     Chunk[,] chunks = new Chunk[0, 0];
     public Transform playerPos;
 
-    List<List<Vector2Int>> allRegions = new List<List<Vector2Int>>();
+    List<Region> allRegions = new List<Region>();
     int[,] fullmap;
 
     [Header("Advanced Settings")]
@@ -87,7 +87,7 @@ public class MapGenerator : MapGeneratorAlgorithms
         }
         newmap = ProcessMap(newmap, TileType.Island, proccessThreshhold); //Deletes Regions under the set threshold
         
-        List<List<Vector2Int>> regions = GetRegions(newmap, chunkSize, islandTiles); //Get All Regions
+        List<Region> regions = GetRegions(newmap, chunkSize, islandTiles); //Get All Regions
         newmap = SetGrassInRegions(regions, newmap, flowerTypes, grassTypes); // randomly set grass in regions
         newmap = Sandbanks(regions, newmap); //Set SandTiles on the border of each region
 

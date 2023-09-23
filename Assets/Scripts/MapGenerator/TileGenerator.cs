@@ -40,11 +40,11 @@ public class TileGenerator : MonoBehaviour
             }
         }
     }
-    public void SetColliderTiles(List<List<Vector2Int>> regions)
+    public void SetColliderTiles(List<Region> regions)
     {
         foreach(var region in regions)
         {
-            foreach(var tile in region)
+            foreach(var tile in region.regionTiles)
             {
                 tilemapTop.SetTile(new Vector3Int(tile.x,tile.y), tiles[0].tile);
             }
