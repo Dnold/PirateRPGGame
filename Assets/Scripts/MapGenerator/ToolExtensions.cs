@@ -90,7 +90,7 @@ namespace ToolExtensions
 
             return closestRegion;
         }
-        public static Vector2Int GetClosestIslandTile(Vector2Int playerTilePos, int[,] upscaledRegion, TileType[] islandTiles)
+        public static Vector2Int GetClosestTileOfType(Vector2Int playerTilePos, int[,] upscaledRegion, TileType[] tileTypes)
         {
             Vector2Int closestTile = new Vector2Int(-1, -1); // (-1,-1) for not found
             float closestDistance = float.MaxValue;
@@ -100,7 +100,7 @@ namespace ToolExtensions
             {
                 for (int y = 0; y < upscaledRegion.GetLength(1); y++)
                 {
-                    if (islandTiles.Contains((TileType)upscaledRegion[x, y]))
+                    if (tileTypes.Contains((TileType)upscaledRegion[x, y]))
                     {
                         //Compare Distance
                         Vector2Int currentTile = new Vector2Int(x, y);

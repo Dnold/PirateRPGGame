@@ -670,6 +670,8 @@ MonoBehaviour:
   MapGeneratorPrefab: {fileID: 3730447458755924698, guid: f36b84363997fb44fb909491d5858702, type: 3}
   characterPlayer: {fileID: 168376425511337805, guid: fc116472e3bac7644b36f7e7a2d39a41, type: 3}
   shipPlayer: {fileID: 4391601616314280090, guid: 8604605839542334687078bf9171d1b3, type: 3}
+  parkedShip: {fileID: 7094879129521875709, guid: 37f8b901ab644404bb1ac80e3e3775a4, type: 3}
+  regionLoadDistance: 3
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0

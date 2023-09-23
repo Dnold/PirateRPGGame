@@ -9,7 +9,7 @@ public class GameManager : MonoBehaviour
     public static GameManager instance { get; private set; }
     public GameObject MapGeneratorPrefab;
     GameObject MapGeneratorObject;
-    Queue<Map> generatedMaps = new Queue<Map>();
+    List<Map> generatedMaps = new List<Map>();
     MapGenerator mapGenerator;
     TileGenerator tileGenerator;
     RegionLoader regionLoader;
@@ -18,13 +18,18 @@ public class GameManager : MonoBehaviour
 
     public GameObject characterPlayer;
     public GameObject shipPlayer;
+    public GameObject parkedShip;
+
+    public Vector2Int parkedShipPos;
+    public Vector2Int lastShipPos;
+    public float regionLoadDistance = 3f;
 
     GameObject shipPlayerObj;
     GameObject characterPlayerObj;
 
     shipCamFollow camFollow;
     int[,] fullmap;
-    
+
     #region Singleton
     void Awake()
     {
@@ -40,11 +45,11 @@ public class GameManager : MonoBehaviour
         DontDestroyOnLoad(gameObject);
     }
     #endregion
-   
+
     public void Start()
     {
-      Map map =  GenerateMap();
-        SpawnShipPlayer(map.fullMap);
+        Map map = GenerateMap();
+        SpawnShipPlayer(ChunkTools.FindWaterRandomWaterTile(map.fullMap));
     }
     Map GenerateMap()
     {
@@ -59,32 +64,52 @@ public class GameManager : MonoBehaviour
         fullmap = map.fullMap;
         tileGenerator.LoadFullMapTiles(new Vector2Int(map.fullMap.GetLength(0), map.fullMap.GetLength(1)), map.fullMap);
         tileGenerator.SetColliderTiles(regions);
-        generatedMaps.Enqueue(map);
+        generatedMaps.Add(map);
         return map;
     }
-    void SpawnShipPlayer(int[,] map)
+    void SpawnShipPlayer(Vector2Int pos)
     {
-        Vector2Int randomWaterPos = ChunkTools.FindWaterRandomWaterTile(map);
-        shipPlayerObj = Instantiate(shipPlayer, new Vector3(randomWaterPos.x, randomWaterPos.y), Quaternion.identity);
+        shipPlayerObj = Instantiate(shipPlayer, new Vector3(pos.x, pos.y), Quaternion.identity);
         camFollow.playerPos = shipPlayerObj.transform;
     }
     void SpawnCharacterPlayer(int[,] upscaledRegion, Vector2Int playerPos)
     {
         Destroy(shipPlayerObj);
-        Vector2Int nearestIslandTile = ChunkTools.GetClosestIslandTile(playerPos*4, upscaledRegion, mapGenerator.islandTiles);
-        characterPlayerObj = Instantiate(characterPlayer, new Vector3(nearestIslandTile.x,nearestIslandTile.y), Quaternion.identity);
+        Vector2Int nearestIslandTile = ChunkTools.GetClosestTileOfType(playerPos * 4, upscaledRegion, mapGenerator.islandTiles);
+        Vector2Int nextWaterTile = ChunkTools.GetClosestTileOfType(nearestIslandTile, upscaledRegion, mapGenerator.waterTiles);
+        GameObject parkShip = Instantiate(parkedShip, new Vector3(nextWaterTile.x, nextWaterTile.y), Quaternion.identity);
+        parkedShipPos = nextWaterTile;
+        characterPlayerObj = Instantiate(characterPlayer, new Vector3(nearestIslandTile.x, nearestIslandTile.y), Quaternion.identity);
         camFollow.playerPos = characterPlayerObj.transform;
+    }
+    public void LoadMap()
+    {
+        for(int i = 0; i < regionLoader.allSpawnedIslandObjects.Count; i++)
+        {
+            Destroy(regionLoader.allSpawnedIslandObjects[i]);
+        }
+        Destroy(characterPlayerObj);
+        
+        SpawnShipPlayer(lastShipPos);
+        Map currentMap = generatedMaps[0];
+        tileGenerator.LoadFullMapTiles(new Vector2Int(currentMap.fullMap.GetLength(0), currentMap.fullMap.GetLength(1)), generatedMaps[0].fullMap);
     }
     public void GenerateRegionLoader(Vector2Int playerPos)
     {
-        List<Vector2Int> region = ChunkTools.GetClosestRegion(playerPos, regions,mapGenerator.islandTiles);
-        tileGenerator.ClearAllTilemap();
-        int[,] regionMap = regionLoader.CreateGrid(region,fullmap,50,50);
-        regionMap = mapGenerator.SetOceanDepth(regionMap);
-        tileGenerator.LoadFullMapTiles(new Vector2Int(regionMap.GetLength(0), regionMap.GetLength(1)),regionMap);
-        SpawnCharacterPlayer(regionMap,playerPos);
+        lastShipPos = new Vector2Int((int)shipPlayerObj.transform.position.x,(int)shipPlayerObj.transform.position.y);
+        List<Vector2Int> region = ChunkTools.GetClosestRegion(playerPos, regions, mapGenerator.islandTiles);
+        if (ChunkTools.GetDistanceToNearestIsland(playerPos, region) < regionLoadDistance)
+        {
+            tileGenerator.ClearAllTilemap();
+            int[,] regionMap = regionLoader.CreateGrid(region, fullmap, 50, 50);
+
+            regionMap = mapGenerator.SetOceanDepth(regionMap, 2);
+            tileGenerator.LoadFullMapTiles(new Vector2Int(regionMap.GetLength(0), regionMap.GetLength(1)), regionMap);
+            SpawnCharacterPlayer(regionMap, playerPos);
+        }
+
     }
-    
+
 
 
 

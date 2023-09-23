@@ -12,7 +12,7 @@ public class MapGeneratorAlgorithms : MapGeneratorHelper
 
 
     [Header("Randomnes")]
-    public float standardDeviation = 0.15f; 
+    public float standardDeviation = 0.15f;
     public bool useRandomSeed;
     public string seed;
     public float flowerFillPercent = 1;
@@ -63,7 +63,7 @@ public class MapGeneratorAlgorithms : MapGeneratorHelper
                 }
                 else if (neighbourCount < 4)
                 {
-                 
+
                     map[x, y] = (int)TileType.Island;
                 }
                 // If neighbourCount is exactly 4, the cell remains unchanged.
@@ -148,7 +148,7 @@ public class MapGeneratorAlgorithms : MapGeneratorHelper
                 int neighbourX = tile.x + dirX[i];
                 int neighbourY = tile.y + dirY[i];
 
-                if (ToolExtensions.ChunkTools.IsInMapRange(neighbourX, neighbourY,size) && mapFlags[neighbourX, neighbourY] == 0)
+                if (ToolExtensions.ChunkTools.IsInMapRange(neighbourX, neighbourY, size) && mapFlags[neighbourX, neighbourY] == 0)
                 {
                     // If flood-filling a water region encounter Sand or Grass,treat  as barriers/boundaries
                     if (!treatedAsSameTypes.Contains(currentTileType) && currentTileType == TileType.Water &&
@@ -252,7 +252,7 @@ public class MapGeneratorAlgorithms : MapGeneratorHelper
             foreach (var subRegion in subRegions)
             {
                 map = RandomizeGrassTypeInRegion(subRegion, map, grassTypes);
-               
+
             }
         }
         return map;
@@ -269,7 +269,7 @@ public class MapGeneratorAlgorithms : MapGeneratorHelper
         }
         return map;
     }
-    public int[,] SetOceanDepth(int[,] fullMap)
+    public int[,] SetOceanDepth(int[,] fullMap, int scale)
     {
         int width = fullMap.GetLength(0);
         int height = fullMap.GetLength(1);
@@ -297,15 +297,15 @@ public class MapGeneratorAlgorithms : MapGeneratorHelper
                     int minDistance = ChunkTools.GetDistanceToNearestIsland(new Vector2Int(x, y), islandPositions);
 
                     // Based on minDistance, set the water depth
-                    if (minDistance < 4)
+                    if (minDistance < 4 * scale)
                     {
                         fullMap[x, y] = (int)TileType.shallowWater;
                     }
-                    else if (minDistance < 5)
+                    else if (minDistance < 5 * scale)
                     {
                         fullMap[x, y] = (int)TileType.lowWater;
                     }
-                    else if (minDistance < 9)
+                    else if (minDistance < 9 * scale)
                     {
                         fullMap[x, y] = (int)TileType.mediumWater;
                     }

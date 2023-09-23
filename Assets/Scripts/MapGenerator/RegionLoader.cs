@@ -12,6 +12,8 @@ public class RegionLoader : MonoBehaviour
     
     public Sprite[] trees;
     public Sprite[] grassTiles;
+
+    public List<GameObject> allSpawnedIslandObjects;
   
 
     
@@ -111,6 +113,7 @@ public class RegionLoader : MonoBehaviour
                     {
 
                         GameObject tree = Instantiate(new GameObject(), new Vector3(x, y, 0), Quaternion.identity);
+                        allSpawnedIslandObjects.Add(tree);
                         var sr = tree.AddComponent<SpriteRenderer>();
                         sr.sprite = trees[Random.Range(0, trees.Length)];
                         sr.sortingOrder = regionSize.y-(int)tree.transform.position.y;
@@ -126,6 +129,7 @@ public class RegionLoader : MonoBehaviour
                         GameObject tree = Instantiate(new GameObject(), new Vector3(x, y, 0), Quaternion.identity);
                         var sr = tree.AddComponent<SpriteRenderer>();
                         sr.sprite = grassTiles[Random.Range(0, grassTiles.Length)];
+                        allSpawnedIslandObjects.Add(tree);
                         
 
                     }

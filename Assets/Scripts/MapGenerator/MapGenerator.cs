@@ -28,6 +28,7 @@ public class MapGenerator : MapGeneratorAlgorithms
     public TileType[] grassTypes = { (TileType)3, (TileType)5, (TileType)6 };
     public TileType[] flowerTypes;
     public TileType[] islandTiles;
+    public TileType[] waterTiles;
 
     public RegionLoader regionLoader;
 
@@ -58,7 +59,7 @@ public class MapGenerator : MapGeneratorAlgorithms
         int[,] newmap = ConcatenateChunks(chunks);  //Put all chunks into a full map
 
 
-        newmap = SetOceanDepth(newmap); //Apply Ocean Depth
+        newmap = SetOceanDepth(newmap,1); //Apply Ocean Depth
     
 
         //Get all regions from the full map
