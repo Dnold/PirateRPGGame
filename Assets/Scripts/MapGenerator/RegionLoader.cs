@@ -116,7 +116,7 @@ public class RegionLoader : MonoBehaviour
                         allSpawnedIslandObjects.Add(tree);
                         var sr = tree.AddComponent<SpriteRenderer>();
                         sr.sprite = trees[Random.Range(0, trees.Length)];
-                        sr.sortingOrder = regionSize.y-(int)tree.transform.position.y;
+                        sr.sortingOrder = (int)tree.transform.position.y;
 
                     }
                 }

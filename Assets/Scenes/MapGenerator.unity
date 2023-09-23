@@ -412,6 +412,7 @@ MonoBehaviour:
   - {fileID: 21300000, guid: adc1fbe6a6e899f4ea08744dad143fdd, type: 3}
   - {fileID: 21300000, guid: 70af569d9537d3941a1ab50076ae501c, type: 3}
   - {fileID: 21300000, guid: f9556ec188574774080f4b4b2b2dbb3e, type: 3}
+  allSpawnedIslandObjects: []
   regionSize: {x: 200, y: 200}
 --- !u!4 &98320498
 Transform:
@@ -534,7 +535,7 @@ Camera:
   m_Enabled: 1
   serializedVersion: 2
   m_ClearFlags: 1
-  m_BackGroundColor: {r: 0.19215687, g: 0.3019608, b: 0.4745098, a: 0}
+  m_BackGroundColor: {r: 0.3137255, g: 0.39607847, b: 0.6509804, a: 0}
   m_projectionMatrixMode: 1
   m_GateFitMode: 2
   m_FOVAxisMode: 0
@@ -671,6 +672,8 @@ MonoBehaviour:
   characterPlayer: {fileID: 168376425511337805, guid: fc116472e3bac7644b36f7e7a2d39a41, type: 3}
   shipPlayer: {fileID: 4391601616314280090, guid: 8604605839542334687078bf9171d1b3, type: 3}
   parkedShip: {fileID: 7094879129521875709, guid: 37f8b901ab644404bb1ac80e3e3775a4, type: 3}
+  parkedShipPos: {x: 0, y: 0}
+  lastShipPos: {x: 0, y: 0}
   regionLoadDistance: 3
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
