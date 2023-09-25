@@ -122,6 +122,7 @@ public class GameManager : MonoBehaviour
             }
             tileGenerator.LoadFullMapTiles(new Vector2Int(regionMap.GetLength(0), regionMap.GetLength(1)), regionMap);
             SpawnCharacterPlayer(regionMap, playerPos);
+           
         }
     }
 

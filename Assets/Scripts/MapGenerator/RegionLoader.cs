@@ -2,7 +2,6 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using Unity.VisualScripting;
-using UnityEditor.U2D.Aseprite;
 using UnityEngine;
 using UnityEngine.Tilemaps;
 
@@ -70,9 +69,6 @@ public class RegionLoader : MonoBehaviour
     public int[,] CreateGrid(Region region, int[,] sourceGrid, int desiredWidth, int desiredHeight)
     {
         int[,] grid = InitializeGridWithWater(desiredWidth, desiredHeight);
-
-     
-    
 
         // Determine the bounding box of the regionTiles
         int minX = region.regionTiles.Min(tile => tile.x);
