@@ -102,7 +102,7 @@ public class GameManager : MonoBehaviour
     {
         lastShipPos = new Vector2Int((int)shipPlayerObj.transform.position.x, (int)shipPlayerObj.transform.position.y);
         Region region = ChunkTools.GetClosestRegion(playerPos, regions, mapGenerator.islandTiles);
-        tileGenerator.ClearAllTilemap();
+      
 
         if (ChunkTools.GetDistanceToNearestIsland(playerPos, region.regionTiles) < regionLoadDistance)
         {
@@ -120,9 +120,11 @@ public class GameManager : MonoBehaviour
             {
                 regionMap = regionLoader.PlaceTrees(loadedRegion.upscaledMap);
             }
+            tileGenerator.ClearAllTilemap();
             tileGenerator.LoadFullMapTiles(new Vector2Int(regionMap.GetLength(0), regionMap.GetLength(1)), regionMap);
             SpawnCharacterPlayer(regionMap, playerPos);
-           
+            
+
         }
     }
 

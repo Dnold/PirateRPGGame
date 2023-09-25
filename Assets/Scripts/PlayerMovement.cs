@@ -18,6 +18,6 @@ public class PlayerMovement : MonoBehaviour
         moveX = Input.GetAxisRaw("Horizontal");
         moveY = Input.GetAxisRaw("Vertical");
         transform.Translate(new Vector3(moveX, moveY, 0) * speed * Time.deltaTime);
-        GetComponent<SpriteRenderer>().sortingOrder = (int)transform.position.y;
+        
     }
 }
