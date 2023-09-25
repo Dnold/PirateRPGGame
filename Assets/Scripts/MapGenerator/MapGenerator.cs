@@ -14,7 +14,6 @@ using UnityEngine.UIElements;
 public class MapGenerator : MapGeneratorAlgorithms
 {
     Chunk[,] chunks = new Chunk[0, 0];
-    public Transform playerPos;
 
     List<Region> allRegions = new List<Region>();
     int[,] fullmap;
@@ -30,7 +29,6 @@ public class MapGenerator : MapGeneratorAlgorithms
     public TileType[] islandTiles;
     public TileType[] waterTiles;
 
-    public RegionLoader regionLoader;
 
     public Map GenerateMap()
     {
@@ -43,50 +41,48 @@ public class MapGenerator : MapGeneratorAlgorithms
 
     public void GenerateChunks()
     {
- 
         // Initialize the chunks array.
         chunks = new Chunk[gridSize.x, gridSize.y];
 
+        int i = 0;
         //Create Each Chunk
         for (int x = 0; x < gridSize.x; x++)
         {
             for (int y = 0; y < gridSize.y; y++)
             {
-                CreateChunkAtPosition(x, y);
+                CreateChunkAtPosition(x, y,i);
+                i++;
             }
         }
-       
+
         int[,] newmap = ConcatenateChunks(chunks);  //Put all chunks into a full map
 
-
-        newmap = SetOceanDepth(newmap,1); //Apply Ocean Depth
-    
-
-        //Get all regions from the full map
+        newmap = SetOceanDepth(newmap, 1); //Apply Ocean Depth
+        ////Get all regions from the full map
         allRegions = GetRegions(newmap, new Vector2Int(gridSize.x * chunkSize.x, gridSize.y * chunkSize.y), islandTiles);
         fullmap = newmap;
-       
+
         //Divide the full map back into chunks
         chunks = DivideIntoChunks(newmap, chunkSize, chunks);
 
     }
 
-    void CreateChunkAtPosition(int x, int y)
+    void CreateChunkAtPosition(int x, int y, int count)
     {
         //Set Position and Size of the chunk
         Vector2Int pos = new Vector2Int(x, y);
         Vector2Int size = chunkSize;
 
         //Generate Chunk
-        int[,] newmap = FillMapRandom(size);  //Fill with random
-        
-        //Process the chunk
+        int[,] newmap = FillMapRandom(size,count);  //Fill with random
+
+        ////Process the chunk
         for (int i = 0; i <= 3; i++)
         {
             newmap = SmoothMap(size, newmap);  //Applies Cellular Automata
         }
         newmap = ProcessMap(newmap, TileType.Island, proccessThreshhold); //Deletes Regions under the set threshold
-        
+
         List<Region> regions = GetRegions(newmap, chunkSize, islandTiles); //Get All Regions
         newmap = SetGrassInRegions(regions, newmap, flowerTypes, grassTypes); // randomly set grass in regions
         newmap = Sandbanks(regions, newmap); //Set SandTiles on the border of each region
@@ -95,7 +91,7 @@ public class MapGenerator : MapGeneratorAlgorithms
         chunks[x, y] = new Chunk(pos, size, newmap, regions);
     }
 }
-    
+
 
 
 

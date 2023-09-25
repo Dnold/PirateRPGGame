@@ -17,11 +17,6 @@ public class MapGeneratorHelper : MonoBehaviour
     public float waterFillPercent = 50;
     public int proccessThreshhold = 25;
 
-
-    [Header("Benchmark")]
-    public TMP_Text elapsedMsText;
-    public TMP_Text statsText;
-    public placeCam placeCam;
     public bool IsBorder(int x, int y, Vector2Int size)
     {
         return x == 0 || y == 0 || x == size.x - 1 || y == size.y - 1;
@@ -92,9 +87,6 @@ public class MapGeneratorHelper : MonoBehaviour
         return count;
     }
 
-
-    
-
     public static int[,] ConcatenateChunks(Chunk[,] chunks)
     {
         // chunk-,grid- and fullmap- size 
@@ -154,11 +146,4 @@ public class MapGeneratorHelper : MonoBehaviour
 
         return chunkse;
     }
-
-    
-
-
-    
-
 }
-

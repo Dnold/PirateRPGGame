@@ -72,8 +72,6 @@ public class PlayerShipController : MonoBehaviour
         }
 
         transform.position += new Vector3(currentDirection.x, currentDirection.y) * (baseSpeed + effectiveSpeed) * Time.deltaTime;
-       
-
     }
     void HandleDirectionChange()
     {
@@ -98,7 +96,6 @@ public class PlayerShipController : MonoBehaviour
         {
             relativeAngle += 360;
         }
-
         // Calculate the speed boost using the sine function
         // This will automatically give positive values for angles between 0° and 180°
         // and negative values for angles between -180° and 0°
@@ -121,7 +118,6 @@ public class PlayerShipController : MonoBehaviour
     {
         while (true)
         {
-            //Nur Gott und ich Wissen was diese Funktion macht und ich glaube selbst Gott nicht mehr
             float windAngleDegrees = Random.Range(0f, 360f);
             windDirection = new Vector2(Mathf.Cos(windAngleDegrees * Mathf.Deg2Rad), Mathf.Sin(windAngleDegrees * Mathf.Deg2Rad));
             yield return new WaitForSeconds(windTurnTime);
@@ -131,7 +127,8 @@ public class PlayerShipController : MonoBehaviour
     {
         return sailObject.transform.up;
     }
-
+    //Only god and I know what this function does.
+    //and I really hope God forgot
     void RotateDirection(float angle)
     {
         float sin = Mathf.Sin(angle * Mathf.Deg2Rad);

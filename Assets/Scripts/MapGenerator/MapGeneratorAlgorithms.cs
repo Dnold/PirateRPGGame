@@ -9,28 +9,23 @@ using ToolExtensions;
 
 public class MapGeneratorAlgorithms : MapGeneratorHelper
 {
-
-
     [Header("Randomnes")]
-    public float standardDeviation = 0.15f; 
+  
     public bool useRandomSeed;
     public string seed;
-    public float flowerFillPercent = 1;
-    public float noiseThreshold = 0.4f;
-    public float noiseScale = 1f;
+
     public float grassChance = 70;
 
-
-    public int[,] FillMapRandom(Vector2Int size)
+    public int[,] FillMapRandom(Vector2Int size,int count)
     {
         int[,] newMap = new int[size.x, size.y];
 
         if (useRandomSeed)
         {
-            seed = Time.time.ToString() + UnityEngine.Random.Range(0, 2000);
+            seed = Time.time.ToString() + count;
         }
 
-        System.Random rand = new System.Random(seed.GetHashCode());
+        System.Random rand = new System.Random(seed.GetHashCode()+count.ToString().GetHashCode());
 
         for (int x = 0; x < size.x; x++)
         {
@@ -322,63 +317,63 @@ public class MapGeneratorAlgorithms : MapGeneratorHelper
         }
         return fullMap;
     }
-    public int[,] BlurOceanDepthWithNoise(int[,] map, float noiseScale, float noiseThreshold)
-    {
-        int width = map.GetLength(0);
-        int height = map.GetLength(1);
-        int[,] blurredMap = new int[width, height];
+    //public int[,] BlurOceanDepthWithNoise(int[,] map, float noiseScale, float noiseThreshold)
+    //{
+    //    int width = map.GetLength(0);
+    //    int height = map.GetLength(1);
+    //    int[,] blurredMap = new int[width, height];
 
-        for (int x = 1; x < width - 1; x++)
-        {
-            for (int y = 1; y < height - 1; y++)
-            {
-                // Check if the tile is a water type tile
-                if (map[x - 1, y - 1] == (int)TileType.shallowWater ||
-                    map[x - 1, y - 1] == (int)TileType.lowWater ||
-                    map[x - 1, y - 1] == (int)TileType.mediumWater ||
-                    map[x - 1, y - 1] == (int)TileType.deepWater)
-                {
-                    float noiseValue = Mathf.PerlinNoise(x * noiseScale, y * noiseScale);
+    //    for (int x = 1; x < width - 1; x++)
+    //    {
+    //        for (int y = 1; y < height - 1; y++)
+    //        {
+    //            // Check if the tile is a water type tile
+    //            if (map[x - 1, y - 1] == (int)TileType.shallowWater ||
+    //                map[x - 1, y - 1] == (int)TileType.lowWater ||
+    //                map[x - 1, y - 1] == (int)TileType.mediumWater ||
+    //                map[x - 1, y - 1] == (int)TileType.deepWater)
+    //            {
+    //                float noiseValue = Mathf.PerlinNoise(x * noiseScale, y * noiseScale);
 
-                    if (noiseValue > noiseThreshold)
-                    {
-                        // If noise value is above the threshold, compute average blur for this tile.
-                        int sum = 0;
-                        int count = 0; // Number of water tiles considered in the blur.
+    //                if (noiseValue > noiseThreshold)
+    //                {
+    //                    // If noise value is above the threshold, compute average blur for this tile.
+    //                    int sum = 0;
+    //                    int count = 0; // Number of water tiles considered in the blur.
 
-                        for (int i = -1; i <= 1; i++)
-                        {
-                            for (int j = -1; j <= 1; j++)
-                            {
-                                if (map[x + i, y + j] == (int)TileType.shallowWater ||
-                                    map[x + i, y + j] == (int)TileType.lowWater ||
-                                    map[x + i, y + j] == (int)TileType.mediumWater ||
-                                    map[x + i, y + j] == (int)TileType.deepWater)
-                                {
-                                    sum += map[x + i, y + j];
-                                    count++;
-                                }
-                            }
-                        }
+    //                    for (int i = -1; i <= 1; i++)
+    //                    {
+    //                        for (int j = -1; j <= 1; j++)
+    //                        {
+    //                            if (map[x + i, y + j] == (int)TileType.shallowWater ||
+    //                                map[x + i, y + j] == (int)TileType.lowWater ||
+    //                                map[x + i, y + j] == (int)TileType.mediumWater ||
+    //                                map[x + i, y + j] == (int)TileType.deepWater)
+    //                            {
+    //                                sum += map[x + i, y + j];
+    //                                count++;
+    //                            }
+    //                        }
+    //                    }
 
-                        blurredMap[x, y] = sum / count; // Average over the water cells only.
-                    }
-                    else
-                    {
-                        // If noise value is below the threshold, keep the original tile value.
-                        blurredMap[x, y] = map[x, y];
-                    }
-                }
-                else
-                {
-                    // If the tile is not a water type, copy it to the blurredMap without changes.
-                    blurredMap[x, y] = map[x, y];
-                }
-            }
-        }
+    //                    blurredMap[x, y] = sum / count; // Average over the water cells only.
+    //                }
+    //                else
+    //                {
+    //                    // If noise value is below the threshold, keep the original tile value.
+    //                    blurredMap[x, y] = map[x, y];
+    //                }
+    //            }
+    //            else
+    //            {
+    //                // If the tile is not a water type, copy it to the blurredMap without changes.
+    //                blurredMap[x, y] = map[x, y];
+    //            }
+    //        }
+    //    }
 
-        return blurredMap;
-    }
+    //    return blurredMap;
+    //}
     #endregion
 }
 

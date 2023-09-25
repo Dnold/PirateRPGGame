@@ -111,8 +111,9 @@ public class GameManager : MonoBehaviour
             if (loadedRegion == null)
             {
                 regionMap = regionLoader.CreateGrid(region, fullmap, 50, 50);
-                region.upscaledMap = regionMap;
                 regionMap = mapGenerator.SetOceanDepth(regionMap, 2);
+                region.upscaledMap = regionMap;
+                
                 loadedRegions.Add(region);
             }
             else
@@ -122,9 +123,6 @@ public class GameManager : MonoBehaviour
             tileGenerator.LoadFullMapTiles(new Vector2Int(regionMap.GetLength(0), regionMap.GetLength(1)), regionMap);
             SpawnCharacterPlayer(regionMap, playerPos);
         }
-
-
-
     }
 
 
