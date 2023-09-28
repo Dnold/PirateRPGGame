@@ -97,6 +97,7 @@ public class GameManager : MonoBehaviour
         SpawnShipPlayer(lastShipPos);
         Map currentMap = generatedMaps[0];
         tileGenerator.LoadFullMapTiles(new Vector2Int(currentMap.fullMap.GetLength(0), currentMap.fullMap.GetLength(1)), generatedMaps[0].fullMap);
+        tileGenerator.SetColliderTiles(currentMap.regions);
     }
     public void GenerateRegionLoader(Vector2Int playerPos)
     {
