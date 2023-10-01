@@ -30,8 +30,14 @@ public class MapGenerator : MapGeneratorAlgorithms
     public TileType[] waterTiles;
 
 
-    public Map GenerateMap()
+    public Map GenerateMap(int ChunkSize, int GridSize, float WaterFill, int Proccess, string Seed)
     {
+        chunkSize = new Vector2Int(ChunkSize,ChunkSize);
+        gridSize = new Vector2Int(GridSize, GridSize);
+        waterFillPercent = WaterFill;
+        proccessThreshhold = Proccess;
+        seed = Seed;
+
         GenerateChunks();
 
         //Save the map

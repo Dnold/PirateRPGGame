@@ -33,6 +33,8 @@ public class GameManager : MonoBehaviour
     shipCamFollow camFollow;
     int[,] fullmap;
 
+
+    public bool canMove = true;
     #region Singleton
     void Awake()
     {
@@ -51,18 +53,18 @@ public class GameManager : MonoBehaviour
 
     public void Start()
     {
-        Map map = GenerateMap();
+        Map map = GenerateMap(16, 4, 50, 45, "Atzensport");
         SpawnShipPlayer(ChunkTools.FindWaterRandomWaterTile(map.fullMap));
     }
-    Map GenerateMap()
+    public Map GenerateMap(int ChunkSize, int GridSize, float WaterFill, int Proccess, string Seed)
     {
-        camFollow = Camera.main.GetComponent<shipCamFollow>();
+       camFollow = Camera.main.GetComponent<shipCamFollow>();
 
         MapGeneratorObject = Instantiate(MapGeneratorPrefab);
         mapGenerator = MapGeneratorObject.GetComponent<MapGenerator>();
         tileGenerator = MapGeneratorObject.GetComponent<TileGenerator>();
         regionLoader = MapGeneratorObject.GetComponent<RegionLoader>();
-        Map map = mapGenerator.GenerateMap();
+        Map map = mapGenerator.GenerateMap(ChunkSize, GridSize, WaterFill, Proccess, Seed);
         regions = map.regions;
         fullmap = map.fullMap;
         tileGenerator.LoadFullMapTiles(new Vector2Int(map.fullMap.GetLength(0), map.fullMap.GetLength(1)), map.fullMap);
@@ -103,7 +105,7 @@ public class GameManager : MonoBehaviour
     {
         lastShipPos = new Vector2Int((int)shipPlayerObj.transform.position.x, (int)shipPlayerObj.transform.position.y);
         Region region = ChunkTools.GetClosestRegion(playerPos, regions, mapGenerator.islandTiles);
-      
+
 
         if (ChunkTools.GetDistanceToNearestIsland(playerPos, region.regionTiles) < regionLoadDistance)
         {
@@ -114,7 +116,7 @@ public class GameManager : MonoBehaviour
                 regionMap = regionLoader.CreateGrid(region, fullmap, 50, 50);
                 regionMap = mapGenerator.SetOceanDepth(regionMap, 2);
                 region.upscaledMap = regionMap;
-                
+
                 loadedRegions.Add(region);
             }
             else
@@ -124,7 +126,7 @@ public class GameManager : MonoBehaviour
             tileGenerator.ClearAllTilemap();
             tileGenerator.LoadFullMapTiles(new Vector2Int(regionMap.GetLength(0), regionMap.GetLength(1)), regionMap);
             SpawnCharacterPlayer(regionMap, playerPos);
-            
+
 
         }
     }

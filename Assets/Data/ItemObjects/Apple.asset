@@ -13,7 +13,8 @@ MonoBehaviour:
   m_Name: Apple
   m_EditorClassIdentifier: 
   <isStackable>k__BackingField: 1
-  <MaxStackSize>k__BackingField: 99
+  <ID>k__BackingField: 0
+  <MaxStackSize>k__BackingField: 5
   <Name>k__BackingField: Apple
   <Description>k__BackingField: Restores Health
   <ItemImage>k__BackingField: {fileID: -341733588, guid: 86374071283537848b7f32b14d3eb82d, type: 3}

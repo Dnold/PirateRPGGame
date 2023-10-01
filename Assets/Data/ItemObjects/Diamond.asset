@@ -13,6 +13,7 @@ MonoBehaviour:
   m_Name: Diamond
   m_EditorClassIdentifier: 
   <isStackable>k__BackingField: 0
+  <ID>k__BackingField: 1
   <MaxStackSize>k__BackingField: 1
   <Name>k__BackingField: Big ass Diamond
   <Description>k__BackingField: Weighs 10000 Carats. Don't sell this as it may crash

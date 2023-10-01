@@ -13,18 +13,18 @@ MonoBehaviour:
   m_Name: PlayerInventory
   m_EditorClassIdentifier: 
   Items:
-  - quantity: 0
-    item: {fileID: 0}
-  - quantity: 0
-    item: {fileID: 0}
-  - quantity: 4
+  - quantity: 5
+    item: {fileID: 11400000, guid: 5205adf42d5229b428bc0106d224b3bc, type: 2}
+  - quantity: 5
     item: {fileID: 11400000, guid: 5205adf42d5229b428bc0106d224b3bc, type: 2}
   - quantity: 0
     item: {fileID: 0}
   - quantity: 0
     item: {fileID: 0}
-  - quantity: 4
-    item: {fileID: 11400000, guid: fe3059be98f7b8046ba7d74d90d55f0d, type: 2}
+  - quantity: 0
+    item: {fileID: 0}
+  - quantity: 0
+    item: {fileID: 0}
   - quantity: 0
     item: {fileID: 0}
   - quantity: 0

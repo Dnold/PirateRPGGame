@@ -35,17 +35,7 @@ public class PlayerShipController : MonoBehaviour
         //Wer das anfässt ist ein Hurensohn
         //Draw Player Travel Dir
         Debug.DrawRay(transform.position, currentDirection * 5, Color.blue);
-        // Wenn W gedr�ckt wird, erh�he den Gang (aber nicht �ber den maximalen Wert).
-        if (Input.GetKeyDown(KeyCode.W) && gearState < 3)
-        {
-            gearState++;
-        }
-
-        // Wenn S gedr�ckt wird, verringere den Gang (aber nicht unter den minimalen Wert).
-        if (Input.GetKeyDown(KeyCode.S) && gearState > -3)
-        {
-            gearState--;
-        }
+        
         //HEHE PUPU
         // Setze die aktuelle Geschwindigkeit basierend auf dem Gang.
         currentSpeed = maxSpeed * gearSpeeds[gearState + 3]; // +3, um den Index im Bereich von 0 bis 6 zu halten.
@@ -55,7 +45,7 @@ public class PlayerShipController : MonoBehaviour
 
         ApplySpeedBoost();
         UpdateSpriteBasedOnRotation();
-        if (Input.GetKeyDown(KeyCode.E))
+        if (Input.GetKeyDown(KeyCode.E) && GameManager.instance.canMove)
         {
             GameManager.instance.GenerateRegionLoader(new Vector2Int((int)transform.position.x, (int)transform.position.y));
         }
@@ -75,14 +65,28 @@ public class PlayerShipController : MonoBehaviour
     }
     void HandleDirectionChange()
     {
-        if (Input.GetKey(KeyCode.A))
+        if (GameManager.instance.canMove)
         {
-            RotateDirection(rotationSpeed * Time.deltaTime);  // Changed this to negative
-        }
+            if (Input.GetKey(KeyCode.A))
+            {
+                RotateDirection(rotationSpeed * Time.deltaTime);  // Changed this to negative
+            }
 
-        if (Input.GetKey(KeyCode.D))
-        {
-            RotateDirection(-rotationSpeed * Time.deltaTime);  // Changed this to positive
+            if (Input.GetKey(KeyCode.D))
+            {
+                RotateDirection(-rotationSpeed * Time.deltaTime);  // Changed this to positive
+            }
+            // Wenn W gedr�ckt wird, erh�he den Gang (aber nicht �ber den maximalen Wert).
+            if (Input.GetKeyDown(KeyCode.W) && gearState < 3)
+            {
+                gearState++;
+            }
+
+            // Wenn S gedr�ckt wird, verringere den Gang (aber nicht unter den minimalen Wert).
+            if (Input.GetKeyDown(KeyCode.S) && gearState > -3)
+            {
+                gearState--;
+            }
         }
     }
     float CalculateSpeedBoost(float relativeAngle)
