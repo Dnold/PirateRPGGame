@@ -1,3 +1,4 @@
+using Inventory.Model;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -20,6 +21,17 @@ namespace Inventory.UI
         private MouseFollower mouseFollower;
 
         List<InventoryItem> listOfUIItems = new List<InventoryItem>();
+        
+        [Header("Equipped Armor UI")]
+        [SerializeField] private ArmorSlotUI headSlotUI;
+        [SerializeField] private ArmorSlotUI faceSlotUI;
+        [SerializeField] private ArmorSlotUI bodySlotUI;
+        [SerializeField] private ArmorSlotUI leftHandSlotUI;
+        [SerializeField] private ArmorSlotUI rightHandSlotUI;
+        [SerializeField] private ArmorSlotUI leftRingSlotUI;
+        [SerializeField] private ArmorSlotUI rightRingSlotUI;
+        [SerializeField] private ArmorSlotUI necklaceSlotUI;
+        [SerializeField] private ArmorSlotUI feetSlotUI;
 
         private int currentlyDraggedItemIndex = -1;
 
@@ -29,11 +41,41 @@ namespace Inventory.UI
 
         public event Action<int, int> OnSwapItems;
 
+        public event Action<ArmorType> OnArmorUnequip, OnArmorSelected;
+
         private void Awake()
         {
             Hide();
             mouseFollower.Toggle(false);
             itemDescription.ResetDescription();
+            headSlotUI.OnRightClickArmor += HandleArmorRightClick;
+            faceSlotUI.OnRightClickArmor += HandleArmorRightClick;
+            bodySlotUI.OnRightClickArmor += HandleArmorRightClick;
+            leftHandSlotUI.OnRightClickArmor += HandleArmorRightClick;
+            rightHandSlotUI.OnRightClickArmor += HandleArmorRightClick;
+            leftRingSlotUI.OnRightClickArmor += HandleArmorRightClick;
+            rightRingSlotUI.OnRightClickArmor += HandleArmorRightClick;
+            necklaceSlotUI.OnRightClickArmor += HandleArmorRightClick;
+            feetSlotUI.OnRightClickArmor += HandleArmorRightClick;
+            headSlotUI.OnLeftClickArmor += HandleArmorLeftClick;
+            faceSlotUI.OnLeftClickArmor += HandleArmorLeftClick;
+            bodySlotUI.OnLeftClickArmor += HandleArmorLeftClick;
+            leftHandSlotUI.OnLeftClickArmor += HandleArmorLeftClick;
+            rightHandSlotUI.OnLeftClickArmor += HandleArmorLeftClick;
+            leftRingSlotUI.OnLeftClickArmor += HandleArmorLeftClick;
+            rightRingSlotUI.OnLeftClickArmor += HandleArmorLeftClick;
+            necklaceSlotUI.OnLeftClickArmor += HandleArmorLeftClick;
+            feetSlotUI.OnLeftClickArmor += HandleArmorLeftClick;
+
+        }
+        private void HandleArmorRightClick(ArmorType armorType)
+        {
+            OnArmorUnequip?.Invoke(armorType);
+            Debug.Log($"Unequipped {armorType} armor");
+        }
+        private void HandleArmorLeftClick(ArmorType armorType)
+        {
+            OnArmorSelected?.Invoke(armorType);
         }
 
         public void InitializeInventoryUI(int inventorysize)
@@ -79,7 +121,7 @@ namespace Inventory.UI
 
         private void HandleShowItemActions(InventoryItem inventoryItemUI)
         {
-
+            OnItemActionRequested?.Invoke(listOfUIItems.IndexOf(inventoryItemUI));
         }
 
         private void HandleEndDrag(InventoryItem inventoryItemUI)

@@ -12,6 +12,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a92150710e73e9b47a9be9e73af0509a, type: 3}
   m_Name: Apple
   m_EditorClassIdentifier: 
+  <ArmorSlot>k__BackingField: 0
+  <DefenseValue>k__BackingField: -1
   <isStackable>k__BackingField: 1
   <ID>k__BackingField: 0
   <MaxStackSize>k__BackingField: 5

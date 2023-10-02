@@ -82,6 +82,7 @@ public class ConsoleController : MonoBehaviour
     public void ClearPlayerInventory()
     {
         pickUpSystem.ClearInventory();
+
     }
 
     public void PrintOutput(string output)

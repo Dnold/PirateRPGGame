@@ -10,6 +10,7 @@ public class PickUpSystem : MonoBehaviour
     [SerializeField]
     public InventorySO Inventory;
     public ItemSo[] allItems;
+    public EquippedArmorSO equippedArmor;
 
     public void AddItem(int itemID, int quantity)
     {
@@ -22,7 +23,9 @@ public class PickUpSystem : MonoBehaviour
     public void ClearInventory()
     {
         Inventory.Clear();
+        equippedArmor.ClearArmor();
     }
+
     public ItemSo GetItemByID(int id)
     {
         return allItems.FirstOrDefault(x => x.ID == id);

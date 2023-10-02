@@ -1,0 +1,23 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7b4b49df9320c1942bf87286855519c4, type: 3}
+  m_Name: EquipedArmor
+  m_EditorClassIdentifier: 
+  Head: {fileID: 11400000, guid: 7c9068491b3398c4282d02ed83d8f829, type: 2}
+  Face: {fileID: 11400000, guid: 3899ffa1156541b4095fb57d4d3f36b3, type: 2}
+  Body: {fileID: 0}
+  LeftHand: {fileID: 0}
+  RightHand: {fileID: 11400000, guid: b3e3938e21b2d844c82b88cb85138e5a, type: 2}
+  Ring1: {fileID: 11400000, guid: 2938d49443a433246b32b2fa1cb51236, type: 2}
+  Ring2: {fileID: 11400000, guid: 34fb7c6ced6574e49877a81d61cad968, type: 2}
+  Necklace: {fileID: 11400000, guid: d7e7f59c919c7824a8127ac9ba6fea56, type: 2}
+  Feet: {fileID: 11400000, guid: c21f7bb2a5a3fa043b33e3e4c8e53cca, type: 2}

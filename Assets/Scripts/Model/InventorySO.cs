@@ -74,7 +74,7 @@ namespace Inventory.Model
             return 0;
         }
 
-        private bool IsInventoryFull() => Items.Where(e => e.IsEmpty).Any() == false;
+        public bool IsInventoryFull() => Items.Where(e => e.IsEmpty).Any() == false;
       
 
         private int AddStackableItem(ItemSo item, int quantity)
@@ -135,6 +135,10 @@ namespace Inventory.Model
         {
             return Items[itemIndex];
         }
+        public int IndexOf(Item item)
+        {
+           return Items.IndexOf(item);
+        }
 
         public void SwapItems(int itemIndex_1, int itemIndex_2)
         {
@@ -143,7 +147,14 @@ namespace Inventory.Model
             Items[itemIndex_2] = item1;
             InformAboutChange();
         }
-
+        public void RemoveItemAt(int index)
+        {
+            if (index >= 0 && index < Items.Count)
+            {
+                Items[index] = Item.GetEmptyItem(); // Set the item to an empty item
+                InformAboutChange();
+            }
+        }
         private void InformAboutChange()
         {
             OnInventoryUpdated?.Invoke(GetCurrentInventoryState());
