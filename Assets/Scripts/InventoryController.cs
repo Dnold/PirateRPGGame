@@ -61,25 +61,28 @@ namespace Inventory
             inventoryUI.OnItemActionRequested += HandleItemActionRequest;
             inventoryUI.OnArmorUnequip += UnequipAndAddToInventory;
             inventoryUI.OnArmorSelected += SelectArmor;
-            
+
 
         }
         public void SelectArmor(ArmorType armor)
         {
             Item armorItem = equippedArmor.GetArmorItem(armor);
-            inventoryUI.UpdateDescription(inventoryData.IndexOf(armorItem),armorItem.item.ItemImage,armorItem.item.Name,armorItem.item.Description);
+            inventoryUI.UpdateDescription(inventoryData.IndexOf(armorItem), armorItem.item.ItemImage, armorItem.item.Name, armorItem.item.Description);
         }
-       
+
         public void UnequipAndAddToInventory(ArmorType armorType)
         {
             // Unequip the armor item
-            ItemSo unequippedItem = equippedArmor.UnequipItem(armorType);
+
 
             // Check if there was an item to unequip
-            if (unequippedItem != null)
+
+            if (!inventoryData.IsInventoryFull())
             {
-                if (!inventoryData.IsInventoryFull())
+                ItemSo unequippedItem = equippedArmor.UnequipItem(armorType);
+                if (unequippedItem != null)
                 {
+
                     // Add the unequipped item back to the inventory
                     inventoryData.AddItem(unequippedItem, 1);
                 }
