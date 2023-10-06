@@ -33,6 +33,13 @@ public class GameManager : MonoBehaviour
     shipCamFollow camFollow;
     int[,] fullmap;
 
+    //MapGenParameters
+    [Header("MapGenerator Parameters")]
+    public int chunkSize;
+    public int gridSize;
+    public float waterFillPercent;
+    public int proccessThreshold;
+    public string seed;
 
     public bool canMove = true;
     #region Singleton

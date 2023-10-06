@@ -32,7 +32,7 @@ namespace Inventory
 
         private void PrepareInventoryData()
         {
-            //inventoryData.Initialize();
+            inventoryData.Initialize();
             inventoryData.OnInventoryUpdated += UpdateInventoryUI;
             foreach (Item item in initialItems)
             {

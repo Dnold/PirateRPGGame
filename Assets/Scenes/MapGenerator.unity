@@ -2152,19 +2152,19 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 6288907722493284402, guid: 4120266b47ad9144b822131374222e9a, type: 3}
       propertyPath: m_AnchorMax.y
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 6288907722493284402, guid: 4120266b47ad9144b822131374222e9a, type: 3}
       propertyPath: m_AnchorMin.y
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 6288907722493284402, guid: 4120266b47ad9144b822131374222e9a, type: 3}
       propertyPath: m_AnchoredPosition.x
-      value: 0
+      value: 44.159195
       objectReference: {fileID: 0}
     - target: {fileID: 6288907722493284402, guid: 4120266b47ad9144b822131374222e9a, type: 3}
       propertyPath: m_AnchoredPosition.y
-      value: 0
+      value: -41.2814
       objectReference: {fileID: 0}
     - target: {fileID: 7049049993332367432, guid: 4120266b47ad9144b822131374222e9a, type: 3}
       propertyPath: m_Enabled
@@ -3218,6 +3218,11 @@ MonoBehaviour:
   parkedShipPos: {x: 0, y: 0}
   lastShipPos: {x: 0, y: 0}
   regionLoadDistance: 3
+  chunkSize: 32
+  gridSize: 4
+  waterFillPercent: 49.5
+  proccessThreshold: 25
+  seed: Atzensport
   canMove: 1
 --- !u!114 &1519262451
 MonoBehaviour:

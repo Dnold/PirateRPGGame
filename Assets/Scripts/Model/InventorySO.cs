@@ -14,21 +14,25 @@ namespace Inventory.Model
         private List<Item> Items;
 
         [field: SerializeField]
-        public int Size { get; private set; } = 10;
+        public int Size { get; private set; }
 
         public event Action<Dictionary<int, Item>> OnInventoryUpdated;
 
         public void Initialize()
         {
-            Items = new List<Item>();
-            for (int i = 0; i < Size; i++)
+            if (Items.Count != Size)
             {
-                Items.Add(Item.GetEmptyItem());
+                Items = new List<Item>();
+                for (int i = 0; i < Size; i++)
+                {
+                    
+                    Items.Add(Item.GetEmptyItem());
+                }
             }
         }
         public void Clear()
         {
-            for(int i  = 0; i < Items.Count; i++)
+            for (int i = 0; i < Items.Count; i++)
             {
                 Items[i] = Item.GetEmptyItem();
             }
@@ -42,19 +46,19 @@ namespace Inventory.Model
                 {
                     while (quantity > 0 && !IsInventoryFull())
                     {
-                        
+
                         quantity -= AddItemToFirstFreeSlot(item, 1);
                         InformAboutChange();
                         return quantity;
                     }
-                    
+
                 }
             }
 
             quantity = AddStackableItem(item, quantity);
             InformAboutChange();
             return quantity;
-         }
+        }
 
         private int AddItemToFirstFreeSlot(ItemSo item, int v)
         {
@@ -63,7 +67,7 @@ namespace Inventory.Model
                 item = item,
                 quantity = v
             };
-            for(int i = 0; i < Items.Count; i++)
+            for (int i = 0; i < Items.Count; i++)
             {
                 if (Items[i].IsEmpty)
                 {
@@ -75,11 +79,11 @@ namespace Inventory.Model
         }
 
         public bool IsInventoryFull() => Items.Where(e => e.IsEmpty).Any() == false;
-      
+
 
         private int AddStackableItem(ItemSo item, int quantity)
         {
-            for(int i = 0; i < Items.Count; i++)
+            for (int i = 0; i < Items.Count; i++)
             {
 
                 if (Items[i].IsEmpty)
@@ -93,7 +97,7 @@ namespace Inventory.Model
                     {
                         Items[i] = Items[i].ChangeQuantity(Items[i].item.MaxStackSize);
                         quantity -= amountToTake;
-                       
+
                     }
                     else
                     {
@@ -137,7 +141,7 @@ namespace Inventory.Model
         }
         public int IndexOf(Item item)
         {
-           return Items.IndexOf(item);
+            return Items.IndexOf(item);
         }
 
         public void SwapItems(int itemIndex_1, int itemIndex_2)
