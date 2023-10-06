@@ -53,7 +53,8 @@ public class GameManager : MonoBehaviour
 
     public void Start()
     {
-        Map map = GenerateMap(16, 4, 50, 45, "Atzensport");
+        Map map = GenerateMap(32, 6, 49.5f, 32, "JaDieFlascheIstLeer");
+        regions = map.regions;
         SpawnShipPlayer(ChunkTools.FindWaterRandomWaterTile(map.fullMap));
     }
     public Map GenerateMap(int ChunkSize, int GridSize, float WaterFill, int Proccess, string Seed)
