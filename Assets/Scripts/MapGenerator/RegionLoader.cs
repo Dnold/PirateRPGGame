@@ -13,16 +13,7 @@ public class RegionLoader : MonoBehaviour
     public Sprite[] grassTiles;
 
     public List<GameObject> allSpawnedIslandObjects;
-  
-
-    
-    
-   
-
     public Vector2Int regionSize; // This would be the size of your upscaled region.
-
-
-
     private void Start()
     {
         DontDestroyOnLoad(gameObject);
@@ -46,8 +37,6 @@ public class RegionLoader : MonoBehaviour
         }
         return grid;
     }
-
-
     // Determine the dominant TileType among the four tiles, using bilinear interpolation
     private TileType BilinearInterpolate(TileType bottomLeft, TileType topLeft, TileType bottomRight, TileType topRight, float xPercent, float yPercent)
     {
@@ -65,7 +54,6 @@ public class RegionLoader : MonoBehaviour
         // Return the TileType with the highest weight
         return tileWeights.Aggregate((l, r) => l.Value > r.Value ? l : r).Key;
     }
-
     public int[,] CreateGrid(Region region, int[,] sourceGrid, int desiredWidth, int desiredHeight)
     {
         int[,] grid = InitializeGridWithWater(desiredWidth, desiredHeight);
@@ -85,14 +73,10 @@ public class RegionLoader : MonoBehaviour
             TileType currentType = (TileType)sourceGrid[tile.x, tile.y];
 
                 grid[tile.x - minX + offsetX, tile.y - minY + offsetY] = (int)currentType;
-            
         }
-        
         grid = UpscaleGrid(grid, 4);
         regionSize = new Vector2Int(grid.GetLength(0), grid.GetLength(1));
         grid = PlaceTrees(grid);
-      
-
         return grid;
     }
     public int[,] PlaceTrees(int[,] fullmap)
@@ -107,13 +91,11 @@ public class RegionLoader : MonoBehaviour
                     fullmap[x, y] = (int)TileType.Island;
                     if (Random.Range(0, 100) > 75f)
                     {
-
                         GameObject tree = Instantiate(new GameObject(), new Vector3(x, y, 0), Quaternion.identity);
                         allSpawnedIslandObjects.Add(tree);
                         var sr = tree.AddComponent<SpriteRenderer>();
                         sr.sprite = trees[Random.Range(0, trees.Length)];
                         sr.spriteSortPoint = SpriteSortPoint.Pivot;
-
                     }
                 }
                 if (fullmap[x, y] == (int)TileType.MediumGrass)
@@ -121,22 +103,16 @@ public class RegionLoader : MonoBehaviour
                     fullmap[x, y] = (int)TileType.Island;
                     if (Random.Range(0, 100) > 50f)
                     {
-
                         GameObject tree = Instantiate(new GameObject(), new Vector3(x, y, 0), Quaternion.identity);
                         var sr = tree.AddComponent<SpriteRenderer>();
                         sr.sprite = grassTiles[Random.Range(0, grassTiles.Length)];
                         allSpawnedIslandObjects.Add(tree);
-                        
-
                     }
                 }
             }
         }
         return fullmap;
     }
-
-
-
     public int[,] UpscaleGrid(int[,] grid, int upscaleFactor)
     {
         int width = grid.GetLength(0);
@@ -182,17 +158,14 @@ public class RegionLoader : MonoBehaviour
                     }
                 }
 
-
                 // Find the TileType with the maximum weight
                 TileType dominantTile = tileWeights.Aggregate((l, r) => l.Value > r.Value ? l : r).Key;
 
                 upscaledGrid[x, y] = (int)dominantTile;
             }
         }
-
         return upscaledGrid;
     }
-
 }
 
 
